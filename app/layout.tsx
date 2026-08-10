@@ -3,12 +3,6 @@ import { Fraunces, IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
 import "./globals.css";
 import { site } from "@/lib/site";
-import { getCatalogEntries } from "@/lib/catalog";
-import { SiteHeader } from "@/components/site-header";
-import { SiteFooter } from "@/components/site-footer";
-import { CatalogProvider } from "@/components/catalog-provider";
-import { CartProvider } from "@/components/cart-provider";
-import { TimeField } from "@/components/motion/time-field";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -68,57 +62,23 @@ export const metadata: Metadata = {
   },
 };
 
-/** JSON-LD tingkat situs. Rute lain menambah Product, Breadcrumb, dan FAQ sendiri. */
-const organizationLd = {
-  "@context": "https://schema.org",
-  "@type": "Organization",
-  name: site.name,
-  url: site.url,
-  description: site.description,
-  sameAs: [site.social.instagram, site.social.tiktok],
-};
-
-const websiteLd = {
-  "@context": "https://schema.org",
-  "@type": "WebSite",
-  name: site.name,
-  url: site.url,
-  inLanguage: "id-ID",
-  potentialAction: {
-    "@type": "SearchAction",
-    target: `${site.url}/koleksi?vibe={search_term_string}`,
-    "query-input": "required name=search_term_string",
-  },
-};
-
 /**
- * Katalog dibaca sekali di sini, bukan di tiap halaman: keranjang di header ada
- * di semua rute, jadi daftar ringkasnya memang harus tersedia di mana saja.
- * Pembacaannya sendiri di-cache di getCatalog(), jadi ini tidak menambah query
- * per navigasi.
+ * Cangkang paling luar, sengaja tipis.
+ *
+ * Yang tersisa di sini hanya yang benar-benar berlaku untuk semua rute: tag html
+ * dan body, font, dan metadata dasar. Kerangka situs (header, footer, keranjang)
+ * pindah ke app/(site)/layout.tsx, sedangkan panel admin punya kerangkanya
+ * sendiri di app/admin/. Keduanya rute yang berbeda sifatnya: satu etalase
+ * publik, satu ruang kerja di balik login, dan tidak ada gunanya memaksa
+ * keduanya berbagi navigasi.
  */
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const catalog = await getCatalogEntries();
-
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
       className={`${fraunces.variable} ${jakarta.variable} ${plexMono.variable} h-full`}
     >
-      <body className="flex min-h-full flex-col">
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify([organizationLd, websiteLd]) }}
-        />
-        <TimeField />
-        <CatalogProvider catalog={catalog}>
-          <CartProvider>
-            <SiteHeader />
-            <main className="flex-1">{children}</main>
-            <SiteFooter />
-          </CartProvider>
-        </CatalogProvider>
-      </body>
+      <body className="flex min-h-full flex-col">{children}</body>
     </html>
   );
 }
