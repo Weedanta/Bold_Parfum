@@ -1,9 +1,14 @@
 /**
- * Pemetaan baris tabel `products` ke tipe Product.
+ * Pemetaan baris tabel `products` beserta tabel anaknya ke tipe Product.
  *
  * Dipisah dari lib/catalog.ts supaya bebas dari impor Next: pemetaan inilah
  * satu-satunya bagian jalur baca yang punya logika bercabang, dan memisahkannya
  * membuatnya bisa diuji langsung dengan `node --test` tanpa runtime Next.
+ *
+ * Sejak katalog dinormalisasi, bentuk note dan ukuran dijamin kolom dan CHECK
+ * constraint di database. Yang tersisa di sini hanya dua hal yang memang tidak
+ * bisa dijamin PostgREST: urutan baris anak, dan fakta bahwa nilai enum tiba
+ * sebagai string biasa.
  */
 
 import {
@@ -22,6 +27,19 @@ import {
 } from "@/lib/products";
 import { publicPhotoUrl } from "@/lib/supabase/server";
 
+type NoteRow = {
+  position: number;
+  name: string;
+  layer: string;
+  onset: number;
+  peak: number;
+  fade: number;
+};
+
+type SizeRow = { ml: number; price: number };
+type VibeRow = { vibe: string };
+type LabelRow = { position: number; label: string };
+
 export type ProductRow = {
   slug: string;
   code: string;
@@ -29,7 +47,6 @@ export type ProductRow = {
   subtitle: string;
   category: string;
   family: string;
-  vibes: string[] | null;
   juice: string;
   atmosphere_label: string;
   atmosphere_from: string;
@@ -38,21 +55,14 @@ export type ProductRow = {
   longevity_min: number;
   longevity_max: number;
   sillage: string;
-  occasions: string[] | null;
-  badges: string[] | null;
-  notes: unknown;
-  sizes: unknown;
   photo_path: string | null;
   featured_for: string | null;
+  product_notes: NoteRow[] | null;
+  product_sizes: SizeRow[] | null;
+  product_vibes: VibeRow[] | null;
+  product_occasions: LabelRow[] | null;
+  product_badges: LabelRow[] | null;
 };
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === "object" && value !== null;
-}
-
-function isFiniteNumber(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value);
-}
 
 function oneOf<T extends string>(allowed: readonly T[], value: unknown): value is T {
   return typeof value === "string" && (allowed as readonly string[]).includes(value);
@@ -71,50 +81,45 @@ function assertKnown(
   }
 }
 
-/**
- * Note yang bentuknya rusak dibuang, bukan membatalkan seluruh varian: satu note
- * hilang hanya membuat kurva sillage kehilangan satu garis, sedangkan melempar
- * error akan menjatuhkan seluruh halaman produk.
- */
-function parseNotes(raw: unknown): Note[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((entry): Note[] => {
-    if (!isRecord(entry)) return [];
-    const { name, layer, onset, peak, fade } = entry;
-    if (typeof name !== "string" || name.length === 0) return [];
-    if (!oneOf(LAYERS, layer)) return [];
-    if (!isFiniteNumber(onset) || !isFiniteNumber(peak) || !isFiniteNumber(fade)) return [];
-    return [{ name, layer: layer as Layer, onset, peak, fade }];
-  });
+/** PostgREST tidak menjamin urutan baris tersemat, jadi diurutkan di sini. */
+function byPosition<T extends { position: number }>(rows: T[] | null): T[] {
+  return [...(rows ?? [])].sort((a, b) => a.position - b.position);
 }
 
-/**
- * Beda dengan note, varian tanpa ukuran yang sah tidak bisa dijual: harga, tombol
- * beli, dan JSON-LD semuanya bergantung padanya. Kasus itu dilempar dengan
- * menyebut slug-nya supaya ketahuan baris mana yang perlu diperbaiki.
- */
-function parseSizes(raw: unknown, slug: string): { ml: Size; price: number }[] {
-  const parsed = Array.isArray(raw)
-    ? raw.flatMap((entry): { ml: Size; price: number }[] => {
-        if (!isRecord(entry)) return [];
-        const { ml, price } = entry;
-        if (!isFiniteNumber(ml) || !SIZES.includes(ml as Size)) return [];
-        if (!isFiniteNumber(price) || price <= 0) return [];
-        return [{ ml: ml as Size, price }];
-      })
-    : [];
+function toNotes(rows: NoteRow[] | null): Note[] {
+  return byPosition(rows).flatMap((row): Note[] =>
+    // Lapisan asing hanya mungkin muncul kalau enum di database diperluas tanpa
+    // menyentuh kode ini. Note-nya dilewati, bukan menjatuhkan seluruh varian.
+    oneOf(LAYERS, row.layer)
+      ? [
+          {
+            name: row.name,
+            layer: row.layer as Layer,
+            onset: row.onset,
+            peak: row.peak,
+            fade: row.fade,
+          },
+        ]
+      : [],
+  );
+}
 
-  if (parsed.length === 0) {
+function toSizes(rows: SizeRow[] | null, slug: string): { ml: Size; price: number }[] {
+  const sizes = (rows ?? [])
+    .filter((row): row is { ml: Size; price: number } => SIZES.includes(row.ml as Size))
+    .sort((a, b) => a.ml - b.ml);
+
+  // Varian tanpa ukuran tidak bisa dijual: harga, tombol beli, dan JSON-LD
+  // semuanya bergantung padanya.
+  if (sizes.length === 0) {
     throw new Error(`Varian "${slug}" tidak punya ukuran dan harga yang sah.`);
   }
-  return parsed;
+  return sizes;
 }
 
 export function rowToProduct(row: ProductRow): Product {
   assertKnown(oneOf(CATEGORIES, row.category), row.slug, "category", row.category);
   assertKnown(oneOf(SILLAGES, row.sillage), row.slug, "sillage", row.sillage);
-
-  const vibes = (row.vibes ?? []).filter((vibe): vibe is Vibe => oneOf(VIBES, vibe));
 
   return {
     slug: row.slug,
@@ -123,7 +128,9 @@ export function rowToProduct(row: ProductRow): Product {
     subtitle: row.subtitle,
     category: row.category as Category,
     family: row.family,
-    vibes,
+    vibes: (row.product_vibes ?? [])
+      .map((entry) => entry.vibe)
+      .filter((vibe): vibe is Vibe => oneOf(VIBES, vibe)),
     juice: row.juice,
     atmosphere: {
       label: row.atmosphere_label,
@@ -133,10 +140,10 @@ export function rowToProduct(row: ProductRow): Product {
     story: row.story,
     longevity: [row.longevity_min, row.longevity_max],
     sillage: row.sillage as Sillage,
-    occasions: row.occasions ?? [],
-    notes: parseNotes(row.notes),
-    sizes: parseSizes(row.sizes, row.slug),
-    badges: row.badges ?? [],
+    occasions: byPosition(row.product_occasions).map((entry) => entry.label),
+    notes: toNotes(row.product_notes),
+    sizes: toSizes(row.product_sizes, row.slug),
+    badges: byPosition(row.product_badges).map((entry) => entry.label),
     photoUrl: row.photo_path ? publicPhotoUrl(row.photo_path) : null,
     featuredFor: oneOf(CATEGORIES, row.featured_for) ? (row.featured_for as Category) : null,
   };

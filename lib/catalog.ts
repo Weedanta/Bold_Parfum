@@ -27,30 +27,25 @@ export const CATALOG_TAG = "catalog";
 
 export { rowToProduct, type ProductRow };
 
-/** Kolom yang dibaca. `created_at`/`updated_at` tidak dipakai tampilan. */
-const COLUMNS = [
-  "slug",
-  "code",
-  "name",
-  "subtitle",
-  "category",
-  "family",
-  "vibes",
-  "juice",
-  "atmosphere_label",
-  "atmosphere_from",
-  "atmosphere_to",
-  "story",
-  "longevity_min",
-  "longevity_max",
-  "sillage",
-  "occasions",
-  "badges",
-  "notes",
-  "sizes",
-  "photo_path",
-  "featured_for",
-].join(", ");
+/**
+ * Kolom yang dibaca, plus tabel anak yang disemat.
+ *
+ * Semuanya ditarik dalam satu permintaan, bukan satu query per tabel: PostgREST
+ * menerjemahkan bentuk bersarang ini menjadi join di sisi database, jadi biaya
+ * normalisasi tidak berubah menjadi enam perjalanan bolak-balik jaringan.
+ *
+ * `created_at`/`updated_at` tidak dipakai tampilan, jadi tidak ikut diambil.
+ */
+const COLUMNS = `
+  slug, code, name, subtitle, category, family, juice,
+  atmosphere_label, atmosphere_from, atmosphere_to, story,
+  longevity_min, longevity_max, sillage, photo_path, featured_for,
+  product_notes (position, name, layer, onset, peak, fade),
+  product_sizes (ml, price),
+  product_vibes (vibe),
+  product_occasions (position, label),
+  product_badges (position, label)
+`;
 
 export async function getCatalog(): Promise<Product[]> {
   "use cache";
