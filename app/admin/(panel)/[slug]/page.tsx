@@ -6,13 +6,7 @@ import { publicPhotoUrl } from "@/lib/supabase/server";
 import { ProductForm, type AdminProduct } from "@/components/admin/product-form";
 import { PhotoPanel } from "@/components/admin/photo-panel";
 
-/**
- * Rute ini menunggu di server, tanpa cangkang statis lebih dulu.
- *
- * Slug-nya tidak diketahui saat build dan halamannya ada di balik login, jadi
- * cangkang prerender tidak punya nilai apa pun di sini. Tanpa ini, header situs
- * yang membaca usePathname() akan memblokir prerender cangkang tersebut.
- */
+/** Sama seperti /admin: rute di balik login, cangkang statis tidak berguna. */
 export const instant = false;
 
 const COLUMNS = `
