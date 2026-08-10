@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { cacheLife } from "next/cache";
 
 import { site } from "@/lib/site";
 import { whatsappGeneralLink } from "@/lib/whatsapp";
@@ -23,7 +24,17 @@ const columns = [
   },
 ];
 
-export function SiteFooter() {
+/**
+ * Footer sama untuk semua pengunjung, dan satu-satunya nilai yang berubah adalah
+ * tahun hak cipta. Dengan Cache Components aktif, `new Date()` tidak boleh dibaca
+ * saat prerender karena hasilnya bisa berbeda antar render. Memberi footer masa
+ * berlaku harian menyelesaikannya tanpa membuat halaman jadi dinamis: tahunnya
+ * ikut berganti sendiri tanpa perlu build ulang.
+ */
+export async function SiteFooter() {
+  "use cache";
+  cacheLife("days");
+
   return (
     <footer className="hairline mt-32">
       <div className="shell grid gap-12 py-16 md:grid-cols-[1.4fr_1fr_1fr_1fr]">
