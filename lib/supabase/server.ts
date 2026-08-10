@@ -23,12 +23,19 @@ function requireEnv(name: string, fallbackName?: string) {
   );
 }
 
+/** Pasangan URL dan kunci publishable, dipakai juga oleh klien sesi dan proxy. */
+export function supabaseEnv() {
+  return {
+    url: requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
+    key: requireEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY"),
+  };
+}
+
 export function createSupabaseServerClient() {
-  return createClient(
-    requireEnv("NEXT_PUBLIC_SUPABASE_URL"),
-    requireEnv("NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY", "NEXT_PUBLIC_SUPABASE_ANON_KEY"),
-    { auth: { persistSession: false, autoRefreshToken: false } },
-  );
+  const { url, key } = supabaseEnv();
+  return createClient(url, key, {
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
 }
 
 /**
