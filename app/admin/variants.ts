@@ -1,7 +1,7 @@
 import { cache } from "react";
 
 import { createSupabaseSessionClient } from "@/lib/supabase/auth";
-import type { Category } from "@/lib/products";
+import type { Category, Stock } from "@/lib/products";
 
 export type AdminVariant = {
   slug: string;
@@ -12,6 +12,7 @@ export type AdminVariant = {
   photo_path: string | null;
   featured_for: Category | null;
   sort_order: number;
+  stock_status: Stock;
 };
 
 /**
@@ -30,7 +31,9 @@ export const listVariants = cache(async (): Promise<AdminVariant[]> => {
 
   const { data, error } = await supabase
     .from("products")
-    .select("slug, code, name, category, is_published, photo_path, featured_for, sort_order")
+    .select(
+      "slug, code, name, category, is_published, photo_path, featured_for, sort_order, stock_status",
+    )
     .order("sort_order", { ascending: true })
     .order("code", { ascending: true });
 

@@ -3,11 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { ExternalLink, LayoutGrid, Menu } from "lucide-react";
+import { ExternalLink, LayoutGrid, Menu, Plus } from "lucide-react";
 
 import { keluar } from "@/app/admin/actions";
 import type { AdminVariant } from "@/app/admin/variants";
-import { CATEGORIES, CATEGORY_LABELS } from "@/lib/products";
+import { CATEGORIES, CATEGORY_LABELS, STOCK_LABELS } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
 /**
@@ -144,6 +144,14 @@ function Sidebar({
           Semua varian
         </SidebarLink>
 
+        <SidebarLink
+          href="/admin/baru"
+          active={pathname === "/admin/baru"}
+          icon={<Plus className="size-4 shrink-0" />}
+        >
+          Tambah varian
+        </SidebarLink>
+
         <a
           href="/"
           target="_blank"
@@ -182,6 +190,16 @@ function Sidebar({
                         ) : null}
                         {variant.photo_path ? null : (
                           <Dot className="bg-muted/60" label="Belum ada foto" />
+                        )}
+                        {variant.stock_status === "tersedia" ? null : (
+                          <Dot
+                            className={
+                              variant.stock_status === "preorder"
+                                ? "bg-sky-400"
+                                : "bg-orange-400"
+                            }
+                            label={STOCK_LABELS[variant.stock_status]}
+                          />
                         )}
                         {variant.is_published ? null : (
                           <Dot className="bg-red-400" label="Disembunyikan" />

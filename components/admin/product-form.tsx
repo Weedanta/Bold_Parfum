@@ -7,12 +7,15 @@ import {
   CATEGORIES,
   CATEGORY_LABELS,
   SILLAGES,
+  STOCKS,
+  STOCK_LABELS,
   VIBES,
   VIBE_LABELS,
   type Category,
   type Note,
   type Sillage,
   type Size,
+  type Stock,
   type Vibe,
 } from "@/lib/products";
 import {
@@ -49,6 +52,7 @@ export type AdminProduct = {
   featured_for: Category | null;
   sort_order: number;
   is_published: boolean;
+  stock_status: Stock;
 };
 
 function priceOf(sizes: AdminProduct["sizes"], ml: Size) {
@@ -183,7 +187,7 @@ export function ProductForm({ product }: { product: AdminProduct }) {
         <NotesEditor notes={product.notes} />
       </section>
 
-      <section className="grid gap-5 border-t border-line pt-8 sm:grid-cols-3">
+      <section className="grid gap-5 border-t border-line pt-8 sm:grid-cols-2 lg:grid-cols-4">
         <Field label="Varian unggulan" hint="Hanya satu per koleksi. Yang lama otomatis dilepas.">
           <Select name="featured_for" defaultValue={product.featured_for ?? ""}>
             <option value="">Tidak diunggulkan</option>
@@ -197,7 +201,23 @@ export function ProductForm({ product }: { product: AdminProduct }) {
         <Field label="Urutan tampil" hint="Angka kecil tampil lebih dulu.">
           <TextInput name="sort_order" type="number" defaultValue={product.sort_order} />
         </Field>
-        <Field label="Status">
+        {/* Dua sakelar bersebelahan yang sengaja dibedakan namanya. "Tayang"
+            menentukan varian muncul atau tidak; "Ketersediaan" menentukan varian
+            yang muncul itu bisa dibeli atau tidak. Varian kosong biasanya tetap
+            ingin dipajang. */}
+        <Field
+          label="Ketersediaan"
+          hint="Kosong mematikan tombol beli. Preorder tetap bisa dipesan."
+        >
+          <Select name="stock_status" defaultValue={product.stock_status}>
+            {STOCKS.map((stock) => (
+              <option key={stock} value={stock}>
+                {STOCK_LABELS[stock]}
+              </option>
+            ))}
+          </Select>
+        </Field>
+        <Field label="Tayang">
           <label className="flex cursor-pointer items-center gap-2 border border-line px-3 py-2 text-sm">
             <input
               type="checkbox"
