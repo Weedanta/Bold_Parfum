@@ -1,4 +1,4 @@
-import { findInCatalog, type CatalogEntry, type Size } from "@/lib/products";
+import { bisaDibeli, findInCatalog, type CatalogEntry, type Size } from "@/lib/products";
 
 /**
  * Keranjang tidak menyimpan data produk, hanya slug dan ukuran. Nama dan harga
@@ -58,24 +58,44 @@ export function setQty(items: CartItem[], key: string, qty: number): CartItem[] 
   );
 }
 
-/** Entri yang slug atau ukurannya tidak ada lagi di katalog ikut tersaring di sini. */
+/**
+ * Entri yang slug atau ukurannya tidak ada lagi di katalog ikut tersaring di sini.
+ *
+ * Varian yang stoknya kosong TIDAK tersaring, hanya ditandai lewat `orderable`.
+ * Menghilangkannya diam-diam dari keranjang akan membuat pembeli mengira ia salah
+ * ingat; dibiarkan tampil dengan penanda, ia tahu apa yang terjadi pada barangnya.
+ */
 export function cartLines(items: CartItem[], catalog: Catalog) {
   return items.flatMap((item) => {
     const product = findInCatalog(catalog, item.slug);
     const size = product?.sizes.find((s) => s.ml === item.ml);
     if (!product || !size) return [];
-    return [{ item, product, price: size.price, subtotal: size.price * item.qty }];
+    return [
+      {
+        item,
+        product,
+        price: size.price,
+        subtotal: size.price * item.qty,
+        orderable: bisaDibeli(product.stock),
+      },
+    ];
   });
 }
 
+/** Baris yang benar-benar ikut dipesan. Dasar total, lencana, dan pesan WhatsApp. */
+export function orderableLines(items: CartItem[], catalog: Catalog) {
+  return cartLines(items, catalog).filter((line) => line.orderable);
+}
+
 export function cartTotal(items: CartItem[], catalog: Catalog) {
-  return cartLines(items, catalog).reduce((total, line) => total + line.subtotal, 0);
+  return orderableLines(items, catalog).reduce((total, line) => total + line.subtotal, 0);
 }
 
 /**
- * Dihitung dari cartLines, bukan dari items mentah, supaya lencana di header tidak
- * menghitung varian yang sudah tidak ada di katalog.
+ * Dihitung dari orderableLines, bukan dari items mentah, supaya lencana di header
+ * tidak menghitung varian yang sudah tidak ada di katalog maupun yang stoknya
+ * kosong. Angka di lencana harus sama dengan jumlah yang benar-benar bisa dipesan.
  */
 export function cartCount(items: CartItem[], catalog: Catalog) {
-  return cartLines(items, catalog).reduce((count, line) => count + line.item.qty, 0);
+  return orderableLines(items, catalog).reduce((count, line) => count + line.item.qty, 0);
 }

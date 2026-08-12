@@ -16,6 +16,7 @@ import {
   LAYERS,
   SILLAGES,
   SIZES,
+  STOCKS,
   VIBES,
   type Category,
   type Layer,
@@ -23,6 +24,7 @@ import {
   type Product,
   type Sillage,
   type Size,
+  type Stock,
   type Vibe,
 } from "@/lib/products";
 import { publicPhotoUrl } from "@/lib/supabase/server";
@@ -57,6 +59,7 @@ export type ProductRow = {
   sillage: string;
   photo_path: string | null;
   featured_for: string | null;
+  stock_status: string;
   product_notes: NoteRow[] | null;
   product_sizes: SizeRow[] | null;
   product_vibes: VibeRow[] | null;
@@ -120,6 +123,7 @@ function toSizes(rows: SizeRow[] | null, slug: string): { ml: Size; price: numbe
 export function rowToProduct(row: ProductRow): Product {
   assertKnown(oneOf(CATEGORIES, row.category), row.slug, "category", row.category);
   assertKnown(oneOf(SILLAGES, row.sillage), row.slug, "sillage", row.sillage);
+  assertKnown(oneOf(STOCKS, row.stock_status), row.slug, "stock_status", row.stock_status);
 
   return {
     slug: row.slug,
@@ -145,6 +149,7 @@ export function rowToProduct(row: ProductRow): Product {
     sizes: toSizes(row.product_sizes, row.slug),
     badges: byPosition(row.product_badges).map((entry) => entry.label),
     photoUrl: row.photo_path ? publicPhotoUrl(row.photo_path) : null,
+    stock: row.stock_status as Stock,
     featuredFor: oneOf(CATEGORIES, row.featured_for) ? (row.featured_for as Category) : null,
   };
 }

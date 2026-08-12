@@ -28,10 +28,12 @@
 import type { Category, Product, Size } from "@/lib/products";
 
 /**
- * Tanpa `photoUrl` karena URL foto lahir dari Supabase Storage, dan tanpa
- * `featuredFor` karena varian unggulan dicatat terpisah di SEED_FEATURED.
+ * Tanpa `photoUrl` karena URL foto lahir dari Supabase Storage, tanpa
+ * `featuredFor` karena varian unggulan dicatat terpisah di SEED_FEATURED, dan
+ * tanpa `stock` karena semua varian bawaan lahir tersedia — itu sudah jadi
+ * nilai bawaan kolomnya di database.
  */
-export type SeedProduct = Omit<Product, "photoUrl" | "featuredFor">;
+export type SeedProduct = Omit<Product, "photoUrl" | "featuredFor" | "stock">;
 
 const PRICES: { ml: Size; price: number }[] = [
   { ml: 30, price: 149000 },
