@@ -166,3 +166,168 @@
     animation: none;
   }
 }
+
+/* ---------------------------------------------------------------------------
+   Kabut sillage, latar hero. Lihat components/hero-atmosphere.tsx.
+
+   Semua warna ditarik dari `--hero-juice`, variabel yang ditulis ulang GSAP
+   pada elemen hero di tiap frame morph. color-mix() dihitung ulang setiap kali
+   variabel itu berubah, jadi latar ikut berganti warna tanpa satu baris pun
+   JavaScript tambahan. Fallback ke emas dipakai bila hero dirender di luar
+   konteksnya.
+   --------------------------------------------------------------------------- */
+
+.hero-atmosphere {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.hero-vapor {
+  position: absolute;
+  border-radius: 50%;
+  /* screen menaikkan terang tanpa pernah mengangkat titik hitam, jadi obsidian
+     tetap obsidian di bagian yang tidak tersentuh uap. */
+  mix-blend-mode: screen;
+  will-change: transform;
+}
+
+.hero-vapor--top {
+  top: -34%;
+  left: -20%;
+  width: 84vmax;
+  height: 84vmax;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--hero-juice, var(--color-gold)) 38%, transparent),
+    color-mix(in oklab, var(--hero-juice, var(--color-gold)) 12%, transparent) 44%,
+    transparent 72%
+  );
+  animation: hero-drift-top 46s ease-in-out infinite alternate;
+}
+
+.hero-vapor--gold {
+  top: -20%;
+  right: -26%;
+  width: 62vmax;
+  height: 62vmax;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--color-gold) 19%, transparent),
+    transparent 68%
+  );
+  animation: hero-drift-gold 59s ease-in-out infinite alternate;
+}
+
+/* Duduk tepat di atas pita grafik, jadi kurva terbaca muncul dari kabutnya
+   sendiri, bukan ditempel di bawah blok teks. */
+.hero-vapor--base {
+  bottom: -30%;
+  left: 8%;
+  width: 96vmax;
+  height: 54vmax;
+  background: radial-gradient(
+    closest-side,
+    color-mix(in oklab, var(--hero-juice, var(--color-gold)) 28%, transparent),
+    transparent 70%
+  );
+  animation: hero-drift-base 37s ease-in-out infinite alternate;
+}
+
+@keyframes hero-drift-top {
+  from {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(9%, 6%, 0) scale(1.14);
+  }
+}
+
+@keyframes hero-drift-gold {
+  from {
+    transform: translate3d(0, 0, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(-7%, 10%, 0) scale(0.92);
+  }
+}
+
+@keyframes hero-drift-base {
+  from {
+    transform: translate3d(-6%, 0, 0) scale(1);
+  }
+  to {
+    transform: translate3d(8%, -5%, 0) scale(1.1);
+  }
+}
+
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      118% 82% at 50% 38%,
+      transparent 38%,
+      color-mix(in oklab, var(--color-obsidian) 84%, transparent) 100%
+    ),
+    /* Tabir tipis di pucuk layar. Header melayang tanpa latar selama halaman
+       masih di puncak, jadi nama toko dan menu butuh sedikit jaminan kontras.
+       Cukup 45% dan memudar panjang: lebih pekat atau lebih pendek dari ini,
+       tepinya kembali terbaca sebagai bar. */
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--color-obsidian) 45%, transparent) 0%,
+      transparent 18%
+    );
+}
+
+/* Tekstur digambar sekali sebagai feTurbulence lalu diubin 160 px. Yang
+   dianimasikan hanya transform, jadi butirannya berkedip di compositor tanpa
+   pernah menggambar ulang teksturnya. Kotaknya dilebihkan supaya geseran tidak
+   memperlihatkan tepi. */
+.hero-grain {
+  position: absolute;
+  inset: -12%;
+  opacity: 0.055;
+  will-change: transform;
+  animation: hero-grain 1.2s steps(1, end) infinite;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+@keyframes hero-grain {
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  12.5% {
+    transform: translate3d(-2%, -3%, 0);
+  }
+  25% {
+    transform: translate3d(-4%, 2%, 0);
+  }
+  37.5% {
+    transform: translate3d(2%, -4%, 0);
+  }
+  50% {
+    transform: translate3d(-1%, 3%, 0);
+  }
+  62.5% {
+    transform: translate3d(3%, 1%, 0);
+  }
+  75% {
+    transform: translate3d(-3%, -1%, 0);
+  }
+  87.5% {
+    transform: translate3d(1%, 4%, 0);
+  }
+}
+
+/* Bagian yang berkedip dihentikan sepenuhnya. Blok reduced-motion umum di atas
+   hanya memangkas durasi, dan butiran film yang membeku di satu posisi acak
+   masih lebih baik daripada butiran yang berkedip 8 kali per detik. */
+@media (prefers-reduced-motion: reduce) {
+  .hero-vapor,
+  .hero-grain {
+    animation: none !important;
+  }
+}

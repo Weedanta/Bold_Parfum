@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { HeroAtmosphere } from "@/components/hero-atmosphere";
 import { gsap, useGsapScope } from "@/components/motion/use-gsap";
 import {
   areaPath,
@@ -26,6 +27,9 @@ const BOX: Box = { width: 1200, height: 250, padTop: 14, padBottom: 0 };
 const LAYER_ORDER = ["base", "heart", "top"] as const;
 const FILL_OPACITY = [0.1, 0.14, 0.19];
 const STROKE_OPACITY = [0.35, 0.6, 0.95];
+
+/** Sumbu mendatar hero, sebagai pecahan tinggi bidang. */
+const INTENSITY_LINES = [0.24, 0.48, 0.72];
 
 const HOLD_SECONDS = 3.4;
 const MORPH_SECONDS = 1.5;
@@ -244,7 +248,18 @@ export function Hero({ products }: { products: HeroProduct[] }) {
   return (
     <section
       ref={rootRef}
-      className="relative flex min-h-[calc(100svh-4rem)] flex-col overflow-hidden md:min-h-[calc(100svh-5rem)]"
+      /*
+       * Hero ditarik ke belakang header, bukan dimulai di bawahnya.
+       *
+       * Header etalase transparan selama halaman masih di puncak. Kalau hero
+       * baru mulai di bawahnya, jalur setinggi header itu tidak kebagian kabut
+       * dan terbaca sebagai bar hitam yang menempel sendiri di atas layar,
+       * persis yang ingin dihindari header transparan. Margin negatif menaikkan
+       * hero sampai ke tepi atas viewport, padding dengan besar yang sama
+       * mengembalikan ruang isinya, jadi kabut dan sumbu waktu mengalir utuh di
+       * balik header tanpa satu baris pun tata letak yang bergeser.
+       */
+      className="relative -mt-16 flex min-h-svh flex-col overflow-hidden pt-16 md:-mt-20 md:pt-20"
       onPointerMove={movePlayhead}
       onPointerLeave={() => {
         hidePlayhead();
@@ -253,6 +268,8 @@ export function Hero({ products }: { products: HeroProduct[] }) {
       onPointerEnter={() => timelineRef.current?.pause()}
       style={{ ["--hero-juice" as string]: frames[0].product.juice }}
     >
+      <HeroAtmosphere />
+
       {/* Garis waktu membentang setinggi hero, jadi seluruh layar terbaca
           sebagai bidang grafik, bukan latar dekoratif. */}
       <svg
@@ -277,6 +294,23 @@ export function Hero({ products }: { products: HeroProduct[] }) {
             />
           );
         })}
+
+        {/* Sumbu intensitas. Tiga garis saja: cukup untuk menutup bidang ukur
+            menjadi kertas grafik, belum cukup untuk bersaing dengan judul. */}
+        {INTENSITY_LINES.map((unit) => (
+          <line
+            key={unit}
+            data-hero-grid
+            x1={0}
+            x2={1200}
+            y1={unit * 1000}
+            y2={unit * 1000}
+            stroke="var(--color-line)"
+            strokeOpacity={0.5}
+            strokeWidth={1}
+            vectorEffect="non-scaling-stroke"
+          />
+        ))}
       </svg>
 
       {/* Penunjuk waktu. Menggeser kursor di mana pun pada hero akan membaca
@@ -294,11 +328,16 @@ export function Hero({ products }: { products: HeroProduct[] }) {
         />
       </div>
 
+      {/* Tinggi layar ponsel berkisar 640 sampai 950 px. Jarak tetap yang pas di
+          satu perangkat akan memotong pita grafik di perangkat lain, padahal
+          justru grafik itu isi janji hero-nya. Karena itu ritme vertikal di
+          layar kecil ikut svh, sama seperti skala tipografi situs ini; mulai
+          sm: ukuran kembali tetap karena ruangnya sudah pasti cukup. */}
       <div
         data-hero-stage
-        className="shell relative flex flex-1 flex-col justify-center py-10 md:py-12"
+        className="shell relative flex flex-1 flex-col justify-center py-[max(0.875rem,2.2svh)] sm:py-10 md:py-12"
       >
-        <h1 className="mt-8 font-display text-hero font-light">
+        <h1 className="mt-[1.2svh] font-display text-hero font-light sm:mt-6 md:mt-8">
           <span className="block overflow-hidden">
             <span data-hero-line className="block">
               Define
@@ -313,7 +352,7 @@ export function Hero({ products }: { products: HeroProduct[] }) {
 
         <p
           data-hero-fade
-          className="mt-10 max-w-xl text-base leading-relaxed text-muted sm:text-lg"
+          className="mt-[max(0.875rem,2.6svh)] max-w-xl text-base leading-relaxed text-muted sm:mt-8 sm:text-lg md:mt-10"
         >
           Aroma berubah sepanjang hari, dan itulah yang tidak bisa Anda cium
           lewat layar. Kami menggambarkannya untuk Anda, dari semprotan pertama
@@ -322,7 +361,7 @@ export function Hero({ products }: { products: HeroProduct[] }) {
 
         <div
           data-hero-fade
-          className="mt-12 flex flex-col gap-10 sm:flex-row sm:items-end sm:justify-between"
+          className="mt-[max(1rem,3svh)] flex flex-col gap-[max(1rem,2.8svh)] sm:mt-10 sm:flex-row sm:items-end sm:justify-between sm:gap-10 md:mt-12"
         >
           <div className="flex flex-col gap-3 sm:flex-row">
             <Button asChild size="lg">
@@ -340,7 +379,7 @@ export function Hero({ products }: { products: HeroProduct[] }) {
               Indeks aroma {String(active + 1).padStart(2, "0")} /{" "}
               {frames.length}
             </p>
-            <p className="mt-3 font-display text-2xl leading-none">
+            <p className="mt-2.5 font-display text-2xl leading-none sm:mt-3">
               <Link
                 href={`/koleksi/${shown.slug}`}
                 className="transition-colors"
@@ -349,7 +388,7 @@ export function Hero({ products }: { products: HeroProduct[] }) {
                 {shown.name}
               </Link>
             </p>
-            <p className="mt-3 font-mono text-[11px] tracking-wider text-muted uppercase">
+            <p className="mt-2.5 font-mono text-[11px] tracking-wider text-muted uppercase sm:mt-3">
               {shown.family} &middot; {shown.longevity[0]}-{shown.longevity[1]}{" "}
               jam &middot; sillage {shown.sillage}
             </p>
@@ -386,7 +425,7 @@ export function Hero({ products }: { products: HeroProduct[] }) {
           })}
         </div>
 
-        <div aria-hidden="true" className="h-[160px] sm:h-[200px]">
+        <div aria-hidden="true" className="h-[max(4.5rem,13svh)] sm:h-[160px] md:h-[200px]">
           <svg
             viewBox={`0 0 ${BOX.width} ${BOX.height}`}
             preserveAspectRatio="none"
