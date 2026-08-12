@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cn, formatIDR } from "@/lib/utils";
 import { VIBE_LABELS, lowestPrice, type Product } from "@/lib/products";
 import { BottleImage } from "@/components/bottle-image";
+import { StockBadge } from "@/components/stock-badge";
 
 type Props = {
   product: Product;
@@ -26,6 +27,10 @@ export function ProductCard({
         showAtmosphereOnHover
         className="aspect-3/4 border border-line"
       />
+
+      {/* pointer-events-none supaya lencana tidak menghalangi lapisan tautan
+          yang menutupi seluruh kartu lewat after:inset-0 di bawah. */}
+      <StockBadge stock={product.stock} className="pointer-events-none absolute top-3 left-3 z-10" />
 
       <div className="mt-5 flex flex-1 flex-col">
         <div className="flex items-baseline justify-between gap-3">
