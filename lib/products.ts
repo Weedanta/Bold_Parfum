@@ -19,6 +19,16 @@ export type Category = "pria" | "wanita";
 export type Sillage = "Lembut" | "Sedang" | "Kuat";
 export type Size = 30 | 50;
 
+/**
+ * Ketersediaan varian, terpisah dari keputusan tayang.
+ *
+ * `is_published` di database menjawab "varian ini muncul di situs atau tidak".
+ * `stock` menjawab "varian yang muncul itu bisa dibeli sekarang atau tidak".
+ * Parfum yang habis tetap layak dipajang, justru supaya orang menunggunya, jadi
+ * kedua pertanyaan itu tidak bisa diwakili satu sakelar.
+ */
+export type Stock = "tersedia" | "kosong" | "preorder";
+
 export type Note = {
   name: string;
   layer: Layer;
@@ -52,6 +62,8 @@ export type Product = {
    * gambar yang tidak ada.
    */
   photoUrl: string | null;
+  /** Ketersediaan varian. Lihat tipe Stock di atas. */
+  stock: Stock;
   /**
    * Kategori tempat varian ini tampil di Featured Scent of the Month, atau null
    * kalau tidak diunggulkan. Menggantikan konstanta `featured` yang dulu
@@ -80,6 +92,9 @@ export type CatalogEntry = Pick<
   | "juice"
   | "atmosphere"
   | "sizes"
+  // Ikut dikirim karena keranjang hidup di sisi client dan harus tahu mana baris
+  // yang tidak bisa dipesan, tanpa memanggil server lagi.
+  | "stock"
 >;
 
 export function toCatalogEntry(product: Product): CatalogEntry {
@@ -94,6 +109,7 @@ export function toCatalogEntry(product: Product): CatalogEntry {
     juice: product.juice,
     atmosphere: product.atmosphere,
     sizes: product.sizes,
+    stock: product.stock,
   };
 }
 
@@ -103,6 +119,12 @@ export const VIBE_LABELS: Record<Vibe, string> = {
   sweet: "Sweet",
   floral: "Floral",
   dark: "Dark / Nightlife",
+};
+
+export const STOCK_LABELS: Record<Stock, string> = {
+  tersedia: "Tersedia",
+  kosong: "Stok Kosong",
+  preorder: "Preorder",
 };
 
 export const CATEGORY_LABELS: Record<Category, string> = {
@@ -129,6 +151,17 @@ export const VIBES: Vibe[] = ["fresh", "woody", "sweet", "floral", "dark"];
 export const CATEGORIES: Category[] = ["pria", "wanita"];
 export const SILLAGES: Sillage[] = ["Lembut", "Sedang", "Kuat"];
 export const SIZES: Size[] = [30, 50];
+export const STOCKS: Stock[] = ["tersedia", "kosong", "preorder"];
+
+/**
+ * Kosong satu-satunya status yang menutup jalur beli.
+ *
+ * Preorder justru sebaliknya: pesanannya diterima, pengirimannya yang menyusul,
+ * jadi tombolnya tetap hidup dan hanya kata-katanya yang berubah.
+ */
+export function bisaDibeli(stock: Stock) {
+  return stock !== "kosong";
+}
 
 /** Pencarian di dalam daftar yang sudah ada di memori, untuk sisi client. */
 export function findInCatalog<T extends { slug: string }>(

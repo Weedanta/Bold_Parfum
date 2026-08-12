@@ -6,7 +6,15 @@ import { redirect } from "next/navigation";
 import { CATALOG_TAG } from "@/lib/catalog";
 import { createSupabaseSessionClient, requireAdmin } from "@/lib/supabase/auth";
 import { PHOTO_BUCKET } from "@/lib/supabase/server";
-import { CATEGORIES, LAYERS, SILLAGES, type Layer, type Size } from "@/lib/products";
+import {
+  CATEGORIES,
+  LAYERS,
+  SILLAGES,
+  STOCKS,
+  type Layer,
+  type Size,
+  type Stock,
+} from "@/lib/products";
 
 /**
  * Aksi panel admin.
@@ -23,6 +31,8 @@ import { CATEGORIES, LAYERS, SILLAGES, type Layer, type Size } from "@/lib/produ
 export type ActionState = { error?: string; ok?: string };
 
 const HEX = /^#[0-9a-fA-F]{6}$/;
+/** Cerminan constraint products_slug_format di migrasi 0001. */
+const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
 const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const PHOTO_TYPES = ["image/webp", "image/jpeg", "image/png"];
 
@@ -135,6 +145,11 @@ export async function simpanVarian(
     };
   }
 
+  const stock = text(form, "stock_status");
+  if (!STOCKS.includes(stock as Stock)) {
+    return { error: "Status ketersediaan harus Tersedia, Stok Kosong, atau Preorder." };
+  }
+
   const sizesResult = parseSizes(form);
   if ("error" in sizesResult) return { error: sizesResult.error };
 
@@ -171,6 +186,7 @@ export async function simpanVarian(
       featured_for: featuredFor,
       sort_order: Number.isNaN(sortOrder) ? 0 : sortOrder,
       is_published: form.get("is_published") === "on",
+      stock_status: stock,
     },
     p_notes: notesResult.notes,
     p_sizes: sizesResult.sizes,
@@ -183,6 +199,108 @@ export async function simpanVarian(
 
   updateTag(CATALOG_TAG);
   return { ok: `Perubahan pada ${name} tersimpan.` };
+}
+
+/**
+ * Membuat varian baru sebagai draf.
+ *
+ * Hanya empat hal yang diminta di sini; dua puluh field sisanya diisi nilai
+ * bawaan oleh fungsi buat_varian di database, dan varian lahir dalam keadaan
+ * disembunyikan. Melengkapinya adalah pekerjaan form edit, bukan syarat sebelum
+ * varian boleh ada.
+ */
+export async function buatVarian(
+  _prevState: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  await requireAdmin();
+
+  const name = text(form, "name");
+  if (!name) return { error: "Nama varian tidak boleh kosong." };
+
+  const code = text(form, "code");
+  if (!code) return { error: "Kode varian tidak boleh kosong, misalnya TB-14." };
+
+  const slug = text(form, "slug");
+  if (!SLUG.test(slug)) {
+    return {
+      error: "Slug hanya boleh huruf kecil, angka, dan tanda hubung. Misalnya midnight-oud.",
+    };
+  }
+
+  const category = text(form, "category");
+  if (!CATEGORIES.includes(category as (typeof CATEGORIES)[number])) {
+    return { error: "Kategori harus For Him atau For Her." };
+  }
+
+  const sizesResult = parseSizes(form);
+  if ("error" in sizesResult) return { error: sizesResult.error };
+
+  const supabase = await createSupabaseSessionClient();
+
+  const { error } = await supabase.rpc("buat_varian", {
+    p_slug: slug,
+    p_code: code,
+    p_name: name,
+    p_category: category,
+    p_sizes: sizesResult.sizes,
+  });
+
+  // 23505 adalah pelanggaran unique. Dua kolom yang mungkin bentrok hanya slug
+  // dan code, dan keduanya diketik sendiri oleh admin, jadi pesannya menyebut
+  // keduanya alih-alih menerjemahkan nama constraint Postgres.
+  if (error) {
+    if (error.code === "23505") {
+      return { error: `Slug "${slug}" atau kode "${code}" sudah dipakai varian lain.` };
+    }
+    return { error: `Gagal membuat varian: ${error.message}` };
+  }
+
+  updateTag(CATALOG_TAG);
+  redirect(`/admin/${slug}`);
+}
+
+/**
+ * Menghapus satu varian beserta note, harga, vibe, dan fotonya.
+ *
+ * Nama pembanding dibaca ulang dari database, bukan diambil dari form. Form bisa
+ * dikirim tanpa lewat halaman ini, dan kalau nama yang dibandingkan ikut datang
+ * dari pengirimnya, konfirmasi mengetik nama tidak membuktikan apa pun.
+ */
+export async function hapusVarian(
+  _prevState: ActionState,
+  form: FormData,
+): Promise<ActionState> {
+  await requireAdmin();
+
+  const slug = text(form, "slug");
+  const confirmation = text(form, "confirm");
+
+  const supabase = await createSupabaseSessionClient();
+
+  const { data, error: readError } = await supabase
+    .from("products")
+    .select("name, photo_path")
+    .eq("slug", slug)
+    .maybeSingle();
+
+  if (readError) return { error: `Gagal membaca varian: ${readError.message}` };
+  if (!data) return { error: "Varian tidak ditemukan." };
+
+  if (confirmation !== data.name) {
+    return { error: `Ketik persis "${data.name}" untuk menghapus varian ini.` };
+  }
+
+  // Barisnya dihapus lebih dulu. Tabel anak ikut lewat ON DELETE CASCADE, dan
+  // foto di Storage menyusul: objek yatim di bucket tidak merusak apa pun,
+  // sedangkan baris yang menunjuk foto terhapus akan merusak halaman.
+  const { error } = await supabase.from("products").delete().eq("slug", slug);
+  if (error) return { error: `Gagal menghapus: ${error.message}` };
+
+  if (data.photo_path) await supabase.storage.from(PHOTO_BUCKET).remove([data.photo_path]);
+
+  updateTag(CATALOG_TAG);
+  redirect("/admin");
 }
 
 export async function unggahFoto(

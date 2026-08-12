@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import { formatIDR } from "@/lib/utils";
 import { CATEGORY_LABELS, VIBE_LABELS, lowestPrice, type Product } from "@/lib/products";
 import { Badge } from "@/components/ui/badge";
+import { StockBadge } from "@/components/stock-badge";
 import { Button } from "@/components/ui/button";
 import { BottleImage } from "@/components/bottle-image";
 
@@ -34,6 +35,11 @@ export function FeaturedCard({ product }: { product: Product }) {
         <p className="mt-2 text-sm text-muted">{product.subtitle}</p>
 
         <ul className="mt-5 flex flex-wrap gap-1.5">
+          {product.stock === "tersedia" ? null : (
+            <li>
+              <StockBadge stock={product.stock} />
+            </li>
+          )}
           <li>
             <Badge variant="gold">{product.family}</Badge>
           </li>

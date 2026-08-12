@@ -1,5 +1,5 @@
 import { site } from "@/lib/site";
-import { cartLines, cartTotal, type CartItem } from "@/lib/cart";
+import { cartTotal, orderableLines, type CartItem } from "@/lib/cart";
 import { formatIDR } from "@/lib/utils";
 import type { CatalogEntry, Product, Size } from "@/lib/products";
 
@@ -9,7 +9,7 @@ function waLink(message: string) {
 
 /** Pesan untuk satu varian, dipakai tombol beli instan di PDP dan halaman hasil. */
 export function whatsappProductLink(
-  product: Pick<Product, "name" | "family" | "sizes">,
+  product: Pick<Product, "name" | "family" | "sizes" | "stock">,
   ml: Size,
   options?: { fromQuiz?: boolean },
 ) {
@@ -21,6 +21,13 @@ export function whatsappProductLink(
     `Ukuran ${ml} ml${size ? `, ${formatIDR(size.price)}` : ""}`,
   ];
 
+  // Preorder disebut di dalam pesannya, bukan cuma di tombol. Yang sampai ke
+  // admin adalah teks ini, jadi di sinilah kesepakatannya harus terbaca supaya
+  // tidak ada yang mengira barangnya dikirim hari itu juga.
+  if (product.stock === "preorder") {
+    lines.push("", "Varian ini berstatus PREORDER, saya mengerti pengirimannya menyusul.");
+  }
+
   if (options?.fromQuiz) {
     lines.push("", `Varian ini hasil dari Scent Profiler di ${site.url}`);
   }
@@ -31,7 +38,10 @@ export function whatsappProductLink(
 
 /** Pesan untuk seluruh isi keranjang. */
 export function whatsappCartLink(items: CartItem[], catalog: readonly CatalogEntry[]) {
-  const lines = cartLines(items, catalog);
+  // Hanya baris yang bisa dipesan. Varian kosong tetap terlihat di laci
+  // keranjang, tapi tidak ikut ke WhatsApp: pesanan yang dikirim harus bisa
+  // dipenuhi, kalau tidak percakapannya dimulai dengan penolakan.
+  const lines = orderableLines(items, catalog);
   const message = [
     `Halo ${site.name}, saya mau pesan:`,
     "",

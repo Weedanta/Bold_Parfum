@@ -2,7 +2,7 @@ import Link from "next/link";
 
 import { requireAdmin } from "@/lib/supabase/auth";
 import { listVariants } from "@/app/admin/variants";
-import { CATEGORY_LABELS } from "@/lib/products";
+import { CATEGORY_LABELS, STOCK_LABELS } from "@/lib/products";
 
 /** Rute di balik login yang membaca cookie sesi; cangkang statis tidak berguna. */
 export const instant = false;
@@ -14,11 +14,20 @@ export default async function AdminHome() {
   return (
     <div>
       <p className="font-mono text-label tracking-label text-gold uppercase">Panel katalog</p>
-      <h1 className="mt-5 font-display text-display font-light">{rows.length} varian</h1>
+      <div className="mt-5 flex flex-wrap items-end justify-between gap-4">
+        <h1 className="font-display text-display font-light">{rows.length} varian</h1>
 
-      <p className="mt-4 max-w-xl text-sm text-muted">
-        Varian tidak bisa ditambah atau dihapus dari sini, dan batas itu dijaga database. Yang bisa
-        diubah: seluruh isi varian, foto botol, harga, urutan tampil, dan status tayang.
+        <Link
+          href="/admin/baru"
+          className="border border-gold-bright bg-gold-bright px-5 py-2.5 text-sm text-obsidian transition-opacity hover:opacity-90"
+        >
+          Tambah varian
+        </Link>
+      </div>
+
+      <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
+        Semua isi varian bisa diubah dari sini: cerita, note aroma, foto botol, harga, urutan
+        tampil, ketersediaan stok, dan status tayang. Varian juga bisa ditambah dan dihapus.
       </p>
 
       <ul className="mt-10 divide-y divide-line border-y border-line">
@@ -41,6 +50,11 @@ export default async function AdminHome() {
                 ) : null}
                 {row.photo_path ? null : (
                   <span className="border border-line px-2 py-0.5 text-muted">Tanpa foto</span>
+                )}
+                {row.stock_status === "tersedia" ? null : (
+                  <span className="border border-line px-2 py-0.5 text-muted">
+                    {STOCK_LABELS[row.stock_status]}
+                  </span>
                 )}
                 {row.is_published ? null : (
                   <span className="border border-red-400/50 px-2 py-0.5 text-red-400">

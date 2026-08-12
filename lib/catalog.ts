@@ -39,7 +39,7 @@ export { rowToProduct, type ProductRow };
 const COLUMNS = `
   slug, code, name, subtitle, category, family, juice,
   atmosphere_label, atmosphere_from, atmosphere_to, story,
-  longevity_min, longevity_max, sillage, photo_path, featured_for,
+  longevity_min, longevity_max, sillage, photo_path, featured_for, stock_status,
   product_notes (position, name, layer, onset, peak, fade),
   product_sizes (ml, price),
   product_vibes (vibe),

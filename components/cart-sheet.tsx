@@ -4,8 +4,9 @@ import Link from "next/link";
 import { Minus, Plus, ShoppingBag } from "lucide-react";
 
 import { cartLines, cartTotal, itemKey } from "@/lib/cart";
+import { STOCK_LABELS } from "@/lib/products";
 import { whatsappCartLink } from "@/lib/whatsapp";
-import { formatIDR } from "@/lib/utils";
+import { cn, formatIDR } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/components/cart-provider";
@@ -17,6 +18,9 @@ export function CartSheet() {
   const catalog = useCatalog();
   const lines = cartLines(cart.items, catalog);
   const total = cartTotal(cart.items, catalog);
+  // Baris yang stoknya kosong tetap ditampilkan, tapi tidak bisa dipesan. Kalau
+  // seluruh isi keranjang begitu, tidak ada yang bisa dikirim ke WhatsApp.
+  const adaYangBisaDipesan = lines.some((line) => line.orderable);
 
   return (
     <Sheet open={cart.isOpen} onOpenChange={(open) => (open ? cart.open() : cart.close())}>
@@ -58,6 +62,12 @@ export function CartSheet() {
                         {line.item.ml} ml &middot; {formatIDR(line.price)}
                       </p>
 
+                      {line.orderable ? null : (
+                        <p className="mt-1 font-mono text-[11px] text-muted/80">
+                          {STOCK_LABELS[line.product.stock]} &middot; tidak ikut dipesan
+                        </p>
+                      )}
+
                       <div className="mt-3 flex items-center gap-3">
                         <div className="flex items-center border border-line">
                           <button
@@ -80,7 +90,15 @@ export function CartSheet() {
                             <Plus className="size-3" />
                           </button>
                         </div>
-                        <span className="ml-auto font-mono text-xs text-gold">
+                        {/* Subtotal baris yang tidak ikut dipesan diredam dan dicoret.
+                            Kalau ia tetap emas seperti yang lain, jumlah angka yang
+                            terlihat tidak akan cocok dengan Total di bawah. */}
+                        <span
+                          className={cn(
+                            "ml-auto font-mono text-xs",
+                            line.orderable ? "text-gold" : "text-muted/60 line-through",
+                          )}
+                        >
                           {formatIDR(line.subtotal)}
                         </span>
                       </div>
@@ -98,15 +116,21 @@ export function CartSheet() {
                 <span className="font-display text-2xl text-gold">{formatIDR(total)}</span>
               </div>
 
-              <Button asChild size="lg" className="mt-5 w-full">
-                <a
-                  href={whatsappCartLink(cart.items, catalog)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Pesan lewat WhatsApp
-                </a>
-              </Button>
+              {adaYangBisaDipesan ? (
+                <Button asChild size="lg" className="mt-5 w-full">
+                  <a
+                    href={whatsappCartLink(cart.items, catalog)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Pesan lewat WhatsApp
+                  </a>
+                </Button>
+              ) : (
+                <Button type="button" size="lg" disabled className="mt-5 w-full">
+                  Semua varian sedang kosong
+                </Button>
+              )}
               <p className="mt-3 text-center text-[11px] leading-relaxed text-muted">
                 Pesanan diteruskan ke WhatsApp beserta rincian di atas. Stok dan ongkos kirim
                 dikonfirmasi admin.

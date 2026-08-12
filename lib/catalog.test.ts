@@ -25,6 +25,7 @@ function row(overrides: Partial<ProductRow> = {}): ProductRow {
     sillage: "Sedang",
     photo_path: null,
     featured_for: null,
+    stock_status: "tersedia",
     product_notes: [{ position: 0, name: "Bergamot", layer: "top", onset: 0, peak: 10, fade: 45 }],
     product_sizes: [{ ml: 30, price: 149000 }],
     product_vibes: [{ vibe: "fresh" }, { vibe: "woody" }],
@@ -151,6 +152,22 @@ test("varian tanpa ukuran yang sah melempar error yang menyebut slug", () => {
 
 test("kategori tidak dikenal melempar error yang menyebut slug", () => {
   assert.throws(() => rowToProduct(row({ slug: "rusak", category: "unisex" })), /rusak/);
+});
+
+test("stock_status terbaca apa adanya", () => {
+  assert.equal(rowToProduct(row()).stock, "tersedia");
+  assert.equal(rowToProduct(row({ stock_status: "kosong" })).stock, "kosong");
+  assert.equal(rowToProduct(row({ stock_status: "preorder" })).stock, "preorder");
+});
+
+/**
+ * Beda dari vibe yang tidak dikenal, yang cukup dibuang. Status tidak punya
+ * nilai aman untuk ditebak: menganggapnya tersedia bisa menjual barang yang
+ * habis, menganggapnya kosong bisa mematikan varian yang sehat. Lebih baik
+ * berhenti keras dan terlihat.
+ */
+test("stock_status tidak dikenal melempar error yang menyebut slug", () => {
+  assert.throws(() => rowToProduct(row({ slug: "rusak", stock_status: "entahapa" })), /rusak/);
 });
 
 test("featured_for terbaca sebagai kategori", () => {
