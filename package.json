@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "node --import tsx --test \"lib/**/*.test.ts\"",
-    "seed:sql": "node --import tsx scripts/generate-seed-sql.ts"
+    "seed:sql": "node --import tsx scripts/generate-seed-sql.ts",
+    "setup:sql": "node --import tsx scripts/generate-setup-sql.ts"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.20",
