@@ -34,20 +34,38 @@ export function SiteHeader() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
+  const [prevPathname, setPrevPathname] = useState(pathname);
+  if (prevPathname !== pathname) {
+    setPrevPathname(pathname);
     setMenuOpen(false);
-  }, [pathname]);
+  }
 
   return (
-    <header
-      className={cn(
-        "sticky top-0 z-40 transition-colors duration-500",
-        scrolled || menuOpen
-          ? "border-b border-line bg-obsidian/90 backdrop-blur-md"
-          : "border-b border-transparent",
-      )}
-    >
-      <div className="shell flex h-16 items-center justify-between gap-6 md:h-20">
+    <header className="sticky top-0 z-40">
+      {/*
+       * Permukaan header dipisah jadi lapisan sendiri.
+       *
+       * Sebelumnya latar, blur, dan garis batas dipasang lewat pergantian kelas
+       * di elemen header. Warnanya memang ikut transition, tapi backdrop-filter
+       * tidak: blurnya menyala seketika, jadi header terasa meloncat pada scroll
+       * pertama. Dengan satu lapisan yang hanya berubah opacity, seluruh
+       * permukaan (latar, blur, dan hairline sekaligus) datang dan pergi dalam
+       * satu gerakan yang sama.
+       *
+       * inset-0 membuatnya ikut menutupi panel menu mobile saat terbuka, jadi
+       * panel itu tidak perlu membawa latarnya sendiri.
+       */}
+      <div
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-0 border-b bg-obsidian/85 backdrop-blur-xl transition-opacity duration-500 ease-[var(--ease-out-soft)]",
+          scrolled || menuOpen
+            ? "border-line opacity-100"
+            : "border-transparent opacity-0",
+        )}
+      />
+
+      <div className="shell relative flex h-16 items-center justify-between gap-6 md:h-20">
         <Link
           href="/"
           className="font-display text-xl tracking-tight transition-colors hover:text-gold"
@@ -133,7 +151,7 @@ export function SiteHeader() {
         aria-label="Navigasi utama mobile"
         aria-hidden={!menuOpen}
         className={cn(
-          "grid border-line bg-obsidian/95 backdrop-blur-md transition-[grid-template-rows,border-color,opacity] duration-350 ease-[var(--ease-out-soft)] md:hidden",
+          "relative grid border-line transition-[grid-template-rows,border-color,opacity] duration-350 ease-[var(--ease-out-soft)] md:hidden",
           menuOpen
             ? "grid-rows-[1fr] border-t opacity-100 pointer-events-auto"
             : "grid-rows-[0fr] border-t-transparent opacity-0 pointer-events-none",
