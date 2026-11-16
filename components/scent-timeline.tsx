@@ -35,7 +35,7 @@ const BOX: Box = { width: 720, height: 240, padTop: 14, padBottom: 26 };
 const LAYER_STYLE = {
   top: { fill: 0.26, stroke: 1, mix: "62%, #ffffff" },
   heart: { fill: 0.2, stroke: 0.75, mix: "100%, #ffffff" },
-  base: { fill: 0.14, stroke: 0.5, mix: "78%, #2b2f3a" },
+  base: { fill: 0.14, stroke: 0.5, mix: "78%, #2b2721" },
 } as const;
 
 function layerColor(juice: string, layer: Layer) {
@@ -261,7 +261,7 @@ export function ScentTimeline({ product, className }: Props) {
           {markers.map((marker) => (
             <span
               key={marker.layer}
-              className="absolute -translate-x-1/2 -translate-y-[150%] font-mono text-[10px] tracking-label whitespace-nowrap uppercase"
+              className="absolute -translate-x-1/2 -translate-y-[150%] font-display text-sm font-light whitespace-nowrap italic"
               style={{
                 left: `${marker.left}%`,
                 top: `${marker.top}%`,
@@ -287,22 +287,33 @@ export function ScentTimeline({ product, className }: Props) {
       </div>
 
       <figcaption className="mt-8">
-        <p className="text-sm text-muted" aria-live="polite">
+        <p className="min-h-5 text-sm text-muted" aria-live="polite">
           {reading
             ? `Setelah ${formatDuration(Math.round(reading.time))}, yang masih terasa:`
             : "Arahkan kursor ke grafik untuk membaca aroma pada waktu tertentu."}
         </p>
 
-        <div className="mt-7 grid gap-6 sm:grid-cols-3">
+        {/* Tiga lapisan disusun sebagai baris bergaris rambut, bukan tiga kolom
+            kembar: nama lapisan dan note-nya dibaca berdampingan, seperti daftar
+            isi botol, dan baris yang note-nya banyak boleh lebih tinggi. */}
+        <div className="mt-8 border-b border-line">
           {LAYERS.map((layer) => (
-            <div key={layer}>
-              <p className="font-mono text-label tracking-label text-gold uppercase">
-                {LAYER_LABELS[layer]}
-              </p>
-              <p className="mt-2 text-xs leading-relaxed text-muted">
-                {LAYER_CAPTIONS[layer]}
-              </p>
-              <ul className="mt-4 flex flex-wrap gap-1.5">
+            <div
+              key={layer}
+              className="grid gap-4 border-t border-line py-6 md:grid-cols-[minmax(0,15rem)_minmax(0,1fr)] md:gap-10 md:py-7"
+            >
+              <div>
+                <p className="flex items-center gap-3 font-display text-2xl font-light text-ink">
+                  <span
+                    aria-hidden="true"
+                    className="h-px w-7"
+                    style={{ backgroundColor: layerColor(product.juice, layer) }}
+                  />
+                  {LAYER_LABELS[layer]}
+                </p>
+                <p className="mt-2 text-caption text-muted">{LAYER_CAPTIONS[layer]}</p>
+              </div>
+              <ul className="flex flex-wrap content-start gap-1.5 md:pt-1">
                 {product.notes
                   .filter((note) => note.layer === layer)
                   .map((note) => {
@@ -327,15 +338,15 @@ export function ScentTimeline({ product, className }: Props) {
                               : undefined
                           }
                           className={cn(
-                            "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs transition-[color,border-color,opacity] duration-200",
+                            "flex min-h-9 items-center gap-2.5 rounded-full border px-3.5 py-1.5 text-sm transition-[color,border-color,background-color,opacity] duration-300",
                             isActive
                               ? "border-gold-bright bg-gold-bright/10 text-ink"
-                              : "border-line text-muted hover:border-gold hover:text-ink",
+                              : "border-line text-muted hover:border-ink/30 hover:text-ink",
                             reading && !inReading && "opacity-30",
                           )}
                         >
                           {note.name}
-                          <span className="font-mono text-[10px] text-gold">
+                          <span className="font-mono text-[10px] text-faint">
                             {shortDuration(note.onset)}
                           </span>
                         </button>

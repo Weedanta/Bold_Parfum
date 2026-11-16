@@ -8,6 +8,7 @@ import { bisaDibeli, type Product, type Size } from "@/lib/products";
 import { whatsappGeneralLink, whatsappProductLink } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 import { StockBadge } from "@/components/stock-badge";
+import { Magnetic } from "@/components/motion/magnetic";
 import { useCart } from "@/components/cart-provider";
 
 type Props = {
@@ -34,10 +35,8 @@ export function ProductPurchase({ product, fromQuiz }: Props) {
       {/* Ukuran tetap bisa dipilih walau stoknya kosong: harganya masih informasi
           yang berguna bagi orang yang sedang menimbang untuk nanti. */}
       <fieldset>
-        <legend className="font-mono text-label tracking-label text-muted uppercase">
-          Ukuran
-        </legend>
-        <div className="mt-4 flex gap-3">
+        <legend className="text-caption text-muted">Pilih ukuran botol</legend>
+        <div className="mt-4 grid grid-cols-2 gap-3">
           {product.sizes.map((option) => {
             const isActive = option.ml === size;
             return (
@@ -47,14 +46,23 @@ export function ProductPurchase({ product, fromQuiz }: Props) {
                 onClick={() => setSize(option.ml)}
                 aria-pressed={isActive}
                 className={cn(
-                  "flex-1 border px-4 py-4 text-left transition-colors duration-300",
+                  "group/size relative rounded-[3px] border px-5 py-4 text-left transition-[border-color,background-color] duration-500 ease-[var(--ease-out-soft)]",
                   isActive
-                    ? "border-gold bg-gold/10"
-                    : "border-line hover:border-gold/50",
+                    ? "border-gold-bright/70 bg-raised"
+                    : "border-line hover:border-ink/30",
                 )}
               >
-                <span className="block font-display text-xl">{option.ml} ml</span>
-                <span className="mt-1 block font-mono text-xs text-gold">
+                {/* Titik kecil menandai pilihan selain warna bingkai, supaya
+                    keadaan aktif tidak hanya bergantung pada beda warna. */}
+                <span
+                  aria-hidden="true"
+                  className={cn(
+                    "absolute top-4 right-4 size-1.5 rounded-full bg-gold-bright transition-[opacity,scale] duration-500",
+                    isActive ? "scale-100 opacity-100" : "scale-0 opacity-0",
+                  )}
+                />
+                <span className="block font-display text-2xl font-light">{option.ml} ml</span>
+                <span className="mt-1.5 block font-mono text-xs text-muted">
                   {formatIDR(option.price)}
                 </span>
               </button>
@@ -68,17 +76,22 @@ export function ProductPurchase({ product, fromQuiz }: Props) {
       <div className="mt-8 flex flex-col gap-3">
         {dijual ? (
           <>
-            <Button asChild size="lg">
-              <a
-                href={whatsappProductLink(product, size, { fromQuiz })}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                <MessageCircle />
-                {product.stock === "preorder" ? "Preorder" : "Beli"} via WhatsApp &middot;{" "}
-                {formatIDR(selected.price)}
-              </a>
-            </Button>
+            {/* Satu-satunya tombol yang ikut tertarik ke kursor di halaman ini:
+                tombol yang benar-benar menutup penjualan. */}
+            <Magnetic className="block" strength={0.12}>
+              <Button asChild size="lg" className="w-full">
+                <a
+                  href={whatsappProductLink(product, size, { fromQuiz })}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <MessageCircle />
+                  {product.stock === "preorder" ? "Preorder" : "Beli"} via WhatsApp{" "}
+                  <span aria-hidden="true" className="h-4 w-px bg-current opacity-25" />
+                  <span className="font-mono text-[0.8rem]">{formatIDR(selected.price)}</span>
+                </a>
+              </Button>
+            </Magnetic>
 
             <Button
               type="button"
