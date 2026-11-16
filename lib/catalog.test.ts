@@ -4,7 +4,7 @@ import { test } from "node:test";
 // publicPhotoUrl membaca env saat dipanggil, jadi cukup diisi sebelum uji jalan.
 process.env.NEXT_PUBLIC_SUPABASE_URL = "https://contohproyek.supabase.co";
 
-import { rowToProduct, type ProductRow } from "@/lib/catalog-mapper";
+import { rowToProduct, seedCatalog, type ProductRow } from "@/lib/catalog-mapper";
 
 /** Baris sintetis, bukan salinan data katalog sebenarnya. */
 function row(overrides: Partial<ProductRow> = {}): ProductRow {
@@ -173,4 +173,15 @@ test("stock_status tidak dikenal melempar error yang menyebut slug", () => {
 test("featured_for terbaca sebagai kategori", () => {
   assert.equal(rowToProduct(row({ featured_for: "wanita" })).featuredFor, "wanita");
   assert.equal(rowToProduct(row({ featured_for: "entahapa" })).featuredFor, null);
+});
+
+test("seedCatalog menghasilkan 15 varian utuh dengan unggulan, foto lokal, dan stok tersedia", () => {
+  const catalog = seedCatalog();
+
+  assert.equal(catalog.length, 15);
+  assert.ok(catalog.every((product) => product.stock === "tersedia"));
+  assert.ok(catalog.every((product) => product.photoUrl === `/products/${product.slug}.webp`));
+  assert.equal(catalog.find((product) => product.slug === "crown")?.featuredFor, "pria");
+  assert.equal(catalog.find((product) => product.slug === "reve")?.featuredFor, "wanita");
+  assert.equal(catalog.filter((product) => product.featuredFor !== null).length, 2);
 });
