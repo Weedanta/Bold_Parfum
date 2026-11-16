@@ -19,7 +19,7 @@ export function ShareResult({ productName, url }: Props) {
   async function share() {
     if (navigator.share) {
       try {
-        await navigator.share({ title: `${productName} · ${site.name}`, text, url });
+        await navigator.share({ title: `${productName} by ${site.name}`, text, url });
         return;
       } catch {
         // Pengguna membatalkan sheet berbagi; jatuh ke salin tautan.

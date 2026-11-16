@@ -3,18 +3,19 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/** Huruf biasa, bukan mono kapital: badge memberi keterangan, bukan papan nama. */
 const badgeVariants = cva(
-  "inline-flex items-center rounded-full border font-mono text-label tracking-label uppercase",
+  "inline-flex items-center rounded-full border text-caption whitespace-nowrap",
   {
     variants: {
       variant: {
-        default: "border-line bg-surface/80 text-muted",
-        gold: "border-gold/40 bg-gold/10 text-gold",
+        default: "border-line bg-surface/70 text-muted",
+        gold: "border-gold/35 bg-gold/8 text-gold-bright",
         solid: "border-transparent bg-gold-bright text-obsidian",
       },
       size: {
-        sm: "h-6 px-2.5",
-        md: "h-7 px-3",
+        sm: "h-6 px-2.5 text-xs",
+        md: "h-8 px-3.5",
       },
     },
     defaultVariants: { variant: "default", size: "sm" },
