@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 
 import { requireAdmin } from "@/lib/supabase/auth";
 import { NewVariantForm } from "@/components/admin/new-variant-form";
@@ -13,12 +14,13 @@ export default async function NewVariantPage() {
     <div>
       <Link
         href="/admin"
-        className="font-mono text-label tracking-label text-muted uppercase transition-colors hover:text-ink"
+        className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-ink"
       >
-        &larr; Semua varian
+        <ArrowLeft className="size-4" />
+        Semua varian
       </Link>
 
-      <h1 className="mt-6 font-display text-display font-light">Varian baru</h1>
+      <h1 className="mt-4 font-display text-display font-light">Varian baru</h1>
 
       <p className="mt-4 max-w-xl text-sm leading-relaxed text-muted">
         Isi yang paling dasar dulu. Cerita, note aroma, warna, dan foto botol diisi di halaman

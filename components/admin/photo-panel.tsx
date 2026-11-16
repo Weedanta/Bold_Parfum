@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useActionState } from "react";
 
 import { hapusFoto, unggahFoto, type ActionState } from "@/app/admin/actions";
+import { Button } from "@/components/ui/button";
 
 /**
  * Unggah dan hapus foto botol.
@@ -26,10 +27,10 @@ export function PhotoPanel({
   const state = uploadState.error || uploadState.ok ? uploadState : removeState;
 
   return (
-    <section className="border border-line p-5">
-      <h2 className="font-mono text-label tracking-label text-muted uppercase">Foto botol</h2>
+    <section className="rounded-2xl border border-line bg-surface p-5">
+      <h2 className="text-base text-ink">Foto botol</h2>
 
-      <div className="mt-4 aspect-3/4 w-full max-w-48 border border-line bg-surface">
+      <div className="mt-4 aspect-3/4 w-full max-w-48 overflow-hidden rounded-xl border border-line bg-obsidian">
         {photoUrl ? (
           <Image
             src={photoUrl}
@@ -40,7 +41,7 @@ export function PhotoPanel({
             unoptimized
           />
         ) : (
-          <p className="flex size-full items-center justify-center p-4 text-center text-xs text-muted">
+          <p className="flex size-full items-center justify-center p-4 text-center text-caption text-muted">
             Belum ada foto. Situs menampilkan siluet botol.
           </p>
         )}
@@ -53,16 +54,12 @@ export function PhotoPanel({
           name="photo"
           accept="image/webp,image/jpeg,image/png"
           required
-          className="text-sm text-muted file:mr-3 file:border file:border-line file:bg-obsidian file:px-3 file:py-1.5 file:text-sm file:text-ink"
+          className="text-sm text-muted file:mr-3 file:cursor-pointer file:rounded-full file:border file:border-line file:bg-obsidian file:px-4 file:py-2 file:text-sm file:text-ink"
         />
-        <p className="text-xs text-muted">Maksimal 2 MB. Format WebP, JPEG, atau PNG.</p>
-        <button
-          type="submit"
-          disabled={uploading}
-          className="border border-line px-4 py-2 text-sm transition-colors hover:border-gold disabled:opacity-50"
-        >
+        <p className="text-caption text-faint">Maksimal 2 MB. Format WebP, JPEG, atau PNG.</p>
+        <Button type="submit" variant="outline" size="sm" disabled={uploading}>
           {uploading ? "Mengunggah…" : photoUrl ? "Ganti foto" : "Unggah foto"}
-        </button>
+        </Button>
       </form>
 
       {photoPath ? (
@@ -72,7 +69,7 @@ export function PhotoPanel({
           <button
             type="submit"
             disabled={removing}
-            className="text-sm text-muted underline-offset-4 transition-colors hover:text-red-400 hover:underline disabled:opacity-50"
+            className="link-sweep pb-0.5 text-sm text-muted hover:text-red-300 disabled:opacity-50"
           >
             {removing ? "Menghapus…" : "Hapus foto"}
           </button>
@@ -80,12 +77,12 @@ export function PhotoPanel({
       ) : null}
 
       {state.error ? (
-        <p role="alert" className="mt-4 text-sm text-red-400">
+        <p role="alert" className="mt-4 text-sm text-red-300">
           {state.error}
         </p>
       ) : null}
       {state.ok ? (
-        <p role="status" className="mt-4 text-sm text-gold">
+        <p role="status" className="mt-4 text-sm text-gold-bright">
           {state.ok}
         </p>
       ) : null}

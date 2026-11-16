@@ -26,6 +26,7 @@ import {
   TextArea,
   TextInput,
 } from "@/components/admin/form-fields";
+import { Button } from "@/components/ui/button";
 
 /** Baris apa adanya dari database, termasuk kolom yang tidak dipakai situs publik. */
 export type AdminProduct = {
@@ -90,12 +91,12 @@ export function ProductForm({ product }: { product: AdminProduct }) {
         </Field>
       </section>
 
-      <section>
-        <span className="font-mono text-label tracking-label text-muted uppercase">Karakter</span>
+      <fieldset>
+        <legend className="text-sm text-muted">Karakter</legend>
         <ul className="mt-3 flex flex-wrap gap-2">
           {VIBES.map((vibe) => (
             <li key={vibe}>
-              <label className="flex cursor-pointer items-center gap-2 border border-line px-3 py-2 text-sm transition-colors hover:border-gold">
+              <label className="flex min-h-10 cursor-pointer items-center gap-2 rounded-full border border-line px-4 py-2 text-sm transition-colors hover:border-ink/30 has-[:checked]:border-gold/60 has-[:checked]:bg-gold/8 has-[:checked]:text-gold-bright">
                 <input
                   type="checkbox"
                   name="vibes"
@@ -108,7 +109,7 @@ export function ProductForm({ product }: { product: AdminProduct }) {
             </li>
           ))}
         </ul>
-      </section>
+      </fieldset>
 
       <section className="grid gap-5 sm:grid-cols-3">
         <Field label="Warna cairan" hint="Dipakai kurva sillage dan sorotan kartu.">
@@ -218,7 +219,7 @@ export function ProductForm({ product }: { product: AdminProduct }) {
           </Select>
         </Field>
         <Field label="Tayang">
-          <label className="flex cursor-pointer items-center gap-2 border border-line px-3 py-2 text-sm">
+          <label className="flex cursor-pointer items-center gap-2 rounded-lg border border-line px-3.5 py-2.5 text-sm">
             <input
               type="checkbox"
               name="is_published"
@@ -230,22 +231,18 @@ export function ProductForm({ product }: { product: AdminProduct }) {
         </Field>
       </section>
 
-      <div className="sticky bottom-0 flex flex-wrap items-center gap-4 border-t border-line bg-obsidian py-5">
-        <button
-          type="submit"
-          disabled={pending}
-          className="border border-gold-bright bg-gold-bright px-6 py-2.5 text-sm text-obsidian transition-opacity disabled:opacity-50"
-        >
+      <div className="sticky bottom-0 flex flex-wrap items-center gap-4 border-t border-line bg-obsidian/90 py-5 backdrop-blur-md">
+        <Button type="submit" disabled={pending}>
           {pending ? "Menyimpan…" : "Simpan perubahan"}
-        </button>
+        </Button>
 
         {state.error ? (
-          <p role="alert" className="text-sm text-red-400">
+          <p role="alert" className="text-sm text-red-300">
             {state.error}
           </p>
         ) : null}
         {state.ok ? (
-          <p role="status" className="text-sm text-gold">
+          <p role="status" className="text-sm text-gold-bright">
             {state.ok}
           </p>
         ) : null}

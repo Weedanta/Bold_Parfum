@@ -108,7 +108,7 @@ export function AdminShell({
           >
             <Menu className="size-5" />
           </button>
-          <span className="font-display text-lg">Panel katalog</span>
+          <span className="font-display text-lg font-light">Panel katalog</span>
         </div>
 
         <main className="min-w-0 flex-1 px-5 py-10 md:px-10 md:py-14">{children}</main>
@@ -129,10 +129,13 @@ function Sidebar({
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-line px-5">
-        <Link href="/admin" className="font-display text-lg transition-colors hover:text-gold">
+        <Link
+          href="/admin"
+          className="font-display text-lg font-light transition-colors hover:text-gold-bright"
+        >
           The Bold
         </Link>
-        <span className="font-mono text-label tracking-label text-gold uppercase">Admin</span>
+        <span className="text-caption text-faint">Panel katalog</span>
       </div>
 
       <nav aria-label="Navigasi panel" className="min-h-0 flex-1 overflow-y-auto px-3 py-5">
@@ -156,7 +159,7 @@ function Sidebar({
           href="/"
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-1 flex items-center gap-3 border-l-2 border-transparent px-3 py-2 text-sm text-muted transition-colors hover:text-ink"
+          className="mt-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-muted transition-colors hover:bg-raised/60 hover:text-ink"
         >
           <ExternalLink className="size-4 shrink-0" />
           Lihat situs
@@ -171,9 +174,7 @@ function Sidebar({
 
           return (
             <div key={category} className="mt-7">
-              <p className="px-3 font-mono text-label tracking-label text-muted uppercase">
-                {CATEGORY_LABELS[category]}
-              </p>
+              <p className="px-3 text-caption text-faint">{CATEGORY_LABELS[category]}</p>
 
               <ul className="mt-2">
                 {rows.map((variant) => (
@@ -215,12 +216,12 @@ function Sidebar({
       </nav>
 
       <form action={keluar} className="shrink-0 border-t border-line px-5 py-4">
-        <p className="truncate font-mono text-[11px] text-muted" title={email}>
+        <p className="truncate text-caption text-faint" title={email}>
           {email}
         </p>
         <button
           type="submit"
-          className="mt-1 text-sm text-muted underline-offset-4 transition-colors hover:text-ink hover:underline"
+          className="link-sweep mt-1 pb-0.5 text-sm text-muted hover:text-ink"
         >
           Keluar
         </button>
@@ -245,10 +246,8 @@ function SidebarLink({
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "flex items-center gap-3 border-l-2 px-3 py-2 text-sm transition-colors",
-        active
-          ? "border-gold bg-charcoal/40 text-gold"
-          : "border-transparent text-muted hover:border-line hover:text-ink",
+        "mt-0.5 flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors",
+        active ? "bg-raised text-ink" : "text-muted hover:bg-raised/60 hover:text-ink",
       )}
     >
       {icon}
