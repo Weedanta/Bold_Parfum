@@ -12,6 +12,12 @@ type HeadingRevealProps = {
   id?: string;
   /** Jeda sebelum baris pertama naik, dalam detik. */
   delay?: number;
+  /**
+   * Titik picu ScrollTrigger. Bawaannya "top 88%", yang tidak pernah tercapai
+   * oleh elemen di dasar halaman (halaman berhenti menggulung lebih dulu), jadi
+   * elemen seperti itu perlu titik yang lebih awal, misalnya "top bottom".
+   */
+  start?: string;
 };
 
 /**
@@ -32,6 +38,7 @@ export function HeadingReveal({
   as: Tag = "h2",
   id,
   delay = 0,
+  start = "top 88%",
 }: HeadingRevealProps) {
   const ref = useGsapScope<HTMLHeadingElement>(
     ({ root, reduced }) => {
@@ -63,12 +70,12 @@ export function HeadingReveal({
             delay,
             stagger: 0.09,
             ease: "power3.out",
-            scrollTrigger: { trigger: root, start: "top 88%", once: true },
+            scrollTrigger: { trigger: root, start, once: true },
           });
         },
       });
     },
-    [delay],
+    [delay, start],
   );
 
   return (
