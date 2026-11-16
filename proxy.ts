@@ -1,7 +1,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-import { supabaseEnv } from "@/lib/supabase/server";
+import { hasSupabaseEnv, supabaseEnv } from "@/lib/supabase/server";
 
 /**
  * Menyegarkan token sesi Supabase sebelum rute admin dirender.
@@ -15,6 +15,8 @@ import { supabaseEnv } from "@/lib/supabase/server";
  */
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request });
+  if (!hasSupabaseEnv()) return response;
+
   const { url, key } = supabaseEnv();
 
   const supabase = createServerClient(url, key, {
@@ -32,7 +34,12 @@ export async function proxy(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // Gagal menyegarkan sesi tidak boleh menjatuhkan permintaan; pemeriksaan
+    // akses tetap ditangani oleh requireAdmin().
+  }
   return response;
 }
 

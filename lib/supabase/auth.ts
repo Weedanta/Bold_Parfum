@@ -2,7 +2,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { createServerClient } from "@supabase/ssr";
 
-import { supabaseEnv } from "@/lib/supabase/server";
+import { hasSupabaseEnv, supabaseEnv } from "@/lib/supabase/server";
 
 /**
  * Klien Supabase yang membawa sesi pengguna dari cookie.
@@ -48,22 +48,32 @@ export type AdminSession = {
  * server Supabase. Isi cookie sesi bisa dipalsukan; hasil getUser() tidak.
  */
 export async function getAdminSession(): Promise<AdminSession | undefined> {
-  const supabase = await createSupabaseSessionClient();
+  // Panggil cookies() lebih dulu agar Cache Components tetap menangguhkan
+  // render rute /admin/* ke dalam batas <Suspense> saat build, meskipun env
+  // Supabase belum diisi.
+  await cookies();
+  if (!hasSupabaseEnv()) return undefined;
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return undefined;
+  try {
+    const supabase = await createSupabaseSessionClient();
 
-  // Pengecekan kedua, ke tabel admin_users. Punya akun saja tidak cukup.
-  const { data, error } = await supabase
-    .from("admin_users")
-    .select("user_id, email")
-    .eq("user_id", user.id)
-    .maybeSingle();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return undefined;
 
-  if (error || !data) return undefined;
-  return { userId: data.user_id, email: data.email };
+    // Pengecekan kedua, ke tabel admin_users. Punya akun saja tidak cukup.
+    const { data, error } = await supabase
+      .from("admin_users")
+      .select("user_id, email")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (error || !data) return undefined;
+    return { userId: data.user_id, email: data.email };
+  } catch {
+    return undefined;
+  }
 }
 
 /** Dipakai di awal tiap halaman admin. Melempar pengunjung non-admin ke halaman masuk. */
