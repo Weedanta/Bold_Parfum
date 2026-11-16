@@ -17,10 +17,9 @@ export default async function LoginPage() {
 
   return (
     <main className="flex flex-1 items-center justify-center px-5 py-16">
-      <div className="w-full max-w-sm">
-        <p className="font-mono text-label tracking-label text-gold uppercase">Panel katalog</p>
-        <h1 className="mt-5 font-display text-title font-light">Masuk</h1>
-        <p className="mt-3 text-sm text-muted">
+      <div className="w-full max-w-sm rounded-2xl border border-line bg-surface p-7 sm:p-9">
+        <h1 className="font-display text-title font-light">Masuk ke panel katalog</h1>
+        <p className="mt-3 text-sm leading-relaxed text-muted">
           Hanya akun yang terdaftar sebagai admin yang bisa mengubah katalog.
         </p>
 

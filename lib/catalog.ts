@@ -7,8 +7,8 @@ import {
   type CatalogEntry,
   type Product,
 } from "@/lib/products";
-import { rowToProduct, type ProductRow } from "@/lib/catalog-mapper";
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { rowToProduct, seedCatalog, type ProductRow } from "@/lib/catalog-mapper";
+import { createSupabaseServerClient, hasSupabaseEnv } from "@/lib/supabase/server";
 
 /**
  * Sumber katalog situs: tabel `products` di Supabase.
@@ -52,21 +52,32 @@ export async function getCatalog(): Promise<Product[]> {
   cacheLife("hours");
   cacheTag(CATALOG_TAG);
 
-  const supabase = createSupabaseServerClient();
-  const { data, error } = await supabase
-    .from("products")
-    .select(COLUMNS)
-    // RLS sudah menyaring baris yang belum terbit. Filter ini ditulis ulang di
-    // sini supaya niatnya terbaca dari kode, bukan hanya dari migrasi.
-    .eq("is_published", true)
-    .order("sort_order", { ascending: true })
-    .order("code", { ascending: true });
-
-  if (error) {
-    throw new Error(`Gagal membaca katalog dari Supabase: ${error.message}`);
+  if (!hasSupabaseEnv()) {
+    return seedCatalog();
   }
 
-  return (data as unknown as ProductRow[]).map(rowToProduct);
+  let rows: ProductRow[];
+  try {
+    const supabase = createSupabaseServerClient();
+    const { data, error } = await supabase
+      .from("products")
+      .select(COLUMNS)
+      // RLS sudah menyaring baris yang belum terbit. Filter ini ditulis ulang di
+      // sini supaya niatnya terbaca dari kode, bukan hanya dari migrasi.
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true })
+      .order("code", { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      return seedCatalog();
+    }
+
+    rows = data as unknown as ProductRow[];
+  } catch {
+    return seedCatalog();
+  }
+
+  return rows.map(rowToProduct);
 }
 
 export async function getProductBySlug(slug: string): Promise<Product | undefined> {

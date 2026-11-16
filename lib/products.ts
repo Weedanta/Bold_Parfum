@@ -18,6 +18,7 @@ export type Vibe = "fresh" | "woody" | "sweet" | "floral" | "dark";
 export type Category = "pria" | "wanita";
 export type Sillage = "Lembut" | "Sedang" | "Kuat";
 export type Size = 30 | 50;
+export type ProductMedia = { type: "image" | "video"; src: string };
 
 /**
  * Ketersediaan varian, terpisah dari keputusan tayang.
@@ -92,6 +93,7 @@ export type CatalogEntry = Pick<
   | "juice"
   | "atmosphere"
   | "sizes"
+  | "photoUrl"
   // Ikut dikirim karena keranjang hidup di sisi client dan harus tahu mana baris
   // yang tidak bisa dipesan, tanpa memanggil server lagi.
   | "stock"
@@ -109,6 +111,7 @@ export function toCatalogEntry(product: Product): CatalogEntry {
     juice: product.juice,
     atmosphere: product.atmosphere,
     sizes: product.sizes,
+    photoUrl: product.photoUrl,
     stock: product.stock,
   };
 }
@@ -173,4 +176,120 @@ export function findInCatalog<T extends { slug: string }>(
 
 export function lowestPrice(product: Pick<Product, "sizes">) {
   return Math.min(...product.sizes.map((s) => s.price));
+}
+
+/**
+ * Galeri foto dan video tiap varian di `public/products/`.
+ *
+ * Setiap entri mengikuti urutan tampil: foto sampul utama di indeks 0, disusul
+ * variasi sudut, bahan aroma, atau video presentasi.
+ */
+export const PRODUCT_GALLERY: Record<string, ProductMedia[]> = {
+  crown: [
+    { type: "image", src: "/products/crown.webp" },
+    { type: "image", src: "/products/crown-2.webp" },
+    { type: "image", src: "/products/crown-3.webp" },
+  ],
+  ether: [
+    { type: "image", src: "/products/ether.webp" },
+    { type: "image", src: "/products/ether-2.webp" },
+    { type: "image", src: "/products/ether-3.webp" },
+    { type: "image", src: "/products/ether-4.webp" },
+  ],
+  azur: [
+    { type: "image", src: "/products/azur.webp" },
+    { type: "image", src: "/products/azur-2.webp" },
+    { type: "video", src: "/products/azur-3.mp4" },
+  ],
+  visionary: [
+    { type: "image", src: "/products/visionary.webp" },
+    { type: "image", src: "/products/visionary-2.webp" },
+    { type: "image", src: "/products/visionary-3.webp" },
+  ],
+  ultra: [
+    { type: "image", src: "/products/ultra.webp" },
+    { type: "image", src: "/products/ultra-2.webp" },
+    { type: "image", src: "/products/ultra-3.webp" },
+    { type: "image", src: "/products/ultra-4.webp" },
+  ],
+  "night-shift": [
+    { type: "image", src: "/products/night-shift.webp" },
+    { type: "image", src: "/products/night-shift-2.webp" },
+    { type: "image", src: "/products/night-shift-3.webp" },
+    { type: "image", src: "/products/night-shift-4.webp" },
+  ],
+  eclat: [
+    { type: "image", src: "/products/eclat.webp" },
+    { type: "image", src: "/products/eclat-2.webp" },
+    { type: "image", src: "/products/eclat-3.webp" },
+    { type: "image", src: "/products/eclat-4.webp" },
+  ],
+  "midnight-tide": [
+    { type: "image", src: "/products/midnight-tide.webp" },
+    { type: "image", src: "/products/midnight-tide-2.webp" },
+    { type: "image", src: "/products/midnight-tide-3.webp" },
+  ],
+  voyage: [
+    { type: "image", src: "/products/voyage.webp" },
+    { type: "image", src: "/products/voyage-2.webp" },
+    { type: "image", src: "/products/voyage-3.webp" },
+  ],
+  muse: [
+    { type: "image", src: "/products/muse.webp" },
+    { type: "image", src: "/products/muse-2.webp" },
+    { type: "image", src: "/products/muse-3.webp" },
+    { type: "image", src: "/products/muse-4.webp" },
+  ],
+  reve: [
+    { type: "image", src: "/products/reve.webp" },
+    { type: "image", src: "/products/reve-2.webp" },
+    { type: "image", src: "/products/reve-3.webp" },
+  ],
+  lune: [
+    { type: "image", src: "/products/lune.webp" },
+    { type: "image", src: "/products/lune-2.webp" },
+    { type: "image", src: "/products/lune-3.webp" },
+  ],
+  twist: [
+    { type: "image", src: "/products/twist.webp" },
+    { type: "image", src: "/products/twist-2.webp" },
+    { type: "image", src: "/products/twist-3.webp" },
+    { type: "image", src: "/products/twist-4.webp" },
+  ],
+  "midnight-siren": [
+    { type: "image", src: "/products/midnight-siren.webp" },
+    { type: "image", src: "/products/midnight-siren-2.webp" },
+    { type: "image", src: "/products/midnight-siren-3.webp" },
+    { type: "image", src: "/products/midnight-siren-4.webp" },
+  ],
+  "secret-potion": [
+    { type: "image", src: "/products/secret-potion.webp" },
+    { type: "image", src: "/products/secret-potion-2.webp" },
+    { type: "image", src: "/products/secret-potion-3.webp" },
+    { type: "image", src: "/products/secret-potion-4.webp" },
+  ],
+};
+
+/**
+ * Mengembalikan seluruh daftar media (foto dan video) untuk sebuah varian.
+ * Jika `photoUrl` menunjuk ke foto baru dari Supabase Storage, foto itu
+ * ditempatkan paling depan sebelum galeri lokalnya.
+ */
+export function getProductGallery(
+  product: Pick<Product, "slug" | "photoUrl">,
+): ProductMedia[] {
+  const local = PRODUCT_GALLERY[product.slug];
+  if (!local) {
+    return product.photoUrl ? [{ type: "image", src: product.photoUrl }] : [];
+  }
+  if (!product.photoUrl) {
+    return [];
+  }
+  if (local[0]?.src !== product.photoUrl) {
+    return [
+      { type: "image", src: product.photoUrl },
+      ...local.filter((item) => item.src !== product.photoUrl),
+    ];
+  }
+  return local;
 }

@@ -2,17 +2,22 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+import { cn, formatIDR } from "@/lib/utils";
 import { site } from "@/lib/site";
-import { formatIDR } from "@/lib/utils";
 import { CATEGORY_LABELS, VIBE_LABELS, lowestPrice } from "@/lib/products";
 import { getCatalog, getProductBySlug } from "@/lib/catalog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BottleImage } from "@/components/bottle-image";
+import { ProductGallery } from "@/components/product-gallery";
 import { ProductPurchase } from "@/components/product-purchase";
 import { ScentTimeline } from "@/components/scent-timeline";
 import { ProductCard } from "@/components/product-card";
 import { Reveal } from "@/components/motion/reveal";
+import { HeadingReveal } from "@/components/motion/heading-reveal";
+import { CharReveal } from "@/components/motion/char-reveal";
+
+/** "harian, kantor, dan acara formal": momen pemakaian dibaca sebagai kalimat. */
+const occasionList = new Intl.ListFormat("id", { style: "long", type: "conjunction" });
 
 export async function generateStaticParams() {
   return (await getCatalog()).map((product) => ({ slug: product.slug }));
@@ -27,7 +32,7 @@ export async function generateMetadata({
   const product = await getProductBySlug(slug);
   if (!product) return {};
 
-  const title = `${product.name} · ${product.subtitle}`;
+  const title = `${product.name}, ${product.subtitle}`;
   const description = `${product.story} Keluarga aroma ${product.family}, tahan ${product.longevity[0]}-${product.longevity[1]} jam. Mulai ${formatIDR(lowestPrice(product))}.`;
 
   return {
@@ -36,7 +41,7 @@ export async function generateMetadata({
     alternates: { canonical: `/koleksi/${product.slug}` },
     openGraph: {
       type: "website",
-      title: `${title} · ${site.name}`,
+      title: `${title} | ${site.name}`,
       description,
       url: `/koleksi/${product.slug}`,
     },
@@ -90,121 +95,151 @@ export default async function ProductPage({
     ],
   };
 
-  const specs = [
-    { label: "Longevity", value: `${product.longevity[0]}-${product.longevity[1]} jam` },
-    { label: "Sillage", value: product.sillage },
-    { label: "Occasion", value: product.occasions.join(", ") },
-    { label: "Kode", value: product.code },
-  ];
+  const occasions = occasionList.format(
+    product.occasions.map((occasion) => occasion.toLocaleLowerCase("id")),
+  );
 
   return (
-    <div className="shell pt-10 md:pt-16">
+    <div className="shell pt-6 md:pt-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([productLd, breadcrumbLd]) }}
       />
 
-      <nav aria-label="Remah roti" className="font-mono text-[11px] text-muted">
-        <ol className="flex flex-wrap items-center gap-2">
+      <nav aria-label="Remah roti" className="text-caption text-faint">
+        <ol className="flex flex-wrap items-center gap-x-2">
           <li>
-            <Link href="/" className="transition-colors hover:text-ink">
+            <Link href="/" className="link-sweep transition-colors hover:text-ink">
               Beranda
             </Link>
           </li>
           <li aria-hidden="true">/</li>
           <li>
-            <Link href="/koleksi" className="transition-colors hover:text-ink">
+            <Link href="/koleksi" className="link-sweep transition-colors hover:text-ink">
               Koleksi
             </Link>
           </li>
           <li aria-hidden="true">/</li>
-          <li className="text-gold">{product.name}</li>
+          <li aria-current="page" className="text-muted">
+            {product.name}
+          </li>
         </ol>
       </nav>
 
-      <div className="mt-10 grid gap-12 lg:grid-cols-2 lg:gap-16">
-        <div className="group">
-          <BottleImage
-            product={product}
-            sizes="(min-width: 1024px) 45vw, 100vw"
-            priority
-            className="aspect-4/5 max-h-[62svh] border border-line lg:max-h-none"
-          />
-          <p className="mt-4 text-xs text-muted">Suasana aroma: {product.atmosphere.label}.</p>
+      <div className="mt-6 grid gap-12 md:mt-10 lg:grid-cols-12 lg:gap-x-12 xl:gap-x-20">
+        {/* Botol menempel di layar desktop selama kolom kanan dibaca: produknya
+            tetap terlihat saat orang menimbang ukuran dan harga. Botolnya sendiri
+            hanyut pelan di dalam bidangnya, jadi gambar yang diam tetap hidup. */}
+        <div className="lg:col-span-7">
+          <div className="group lg:sticky lg:top-24">
+            <ProductGallery product={product} />
+            <p className="mt-4 text-caption text-muted">
+              Suasana aroma:{" "}
+              <span className="font-display text-sm text-ink/85 italic">
+                {product.atmosphere.label}
+              </span>
+            </p>
+          </div>
         </div>
 
-        <div>
-          <p className="font-mono text-label tracking-label text-muted uppercase">
-            {CATEGORY_LABELS[product.category]}
+        <div className="lg:col-span-5 lg:pt-4">
+          <CharReveal
+            as="h1"
+            trigger="load"
+            delay={0.2}
+            className="font-display text-statement font-light"
+          >
+            {product.name}
+          </CharReveal>
+          <p className="mt-4 font-display text-xl font-light text-muted italic md:text-2xl">
+            {product.subtitle}
           </p>
-          <h1 className="mt-4 font-display text-display font-light">{product.name}</h1>
-          <p className="mt-3 text-lg text-muted">{product.subtitle}</p>
 
-          <ul className="mt-7 flex flex-wrap gap-1.5">
-            <li>
-              <Badge variant="gold" size="md">
-                {product.family}
-              </Badge>
-            </li>
-            {product.vibes.map((vibe) => (
-              <li key={vibe}>
-                <Badge size="md">{VIBE_LABELS[vibe]}</Badge>
+          <Reveal delay={0.35}>
+            <p className="mt-10 max-w-md text-[1.0625rem] leading-relaxed text-ink/90">
+              {product.story}
+            </p>
+
+            <ul className="mt-8 flex flex-wrap gap-1.5">
+              <li>
+                <Badge variant="gold" size="md">
+                  {product.family}
+                </Badge>
               </li>
-            ))}
-          </ul>
+              {product.vibes.map((vibe) => (
+                <li key={vibe}>
+                  <Badge size="md">{VIBE_LABELS[vibe]}</Badge>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
 
-          <p className="mt-8 text-base leading-relaxed">{product.story}</p>
+          {/* Spesifikasi ditulis sebagai satu angka besar dan satu kalimat, bukan
+              tabel empat kotak: longevity adalah alasan orang membeli, jadi ia
+              yang diberi ukuran, sisanya cukup diceritakan. */}
+          <div className="hairline mt-12 pt-8">
+            <p className="flex items-end gap-5">
+              <span className="font-display text-[clamp(3.75rem,2.6rem+3.4vw,6rem)] leading-[0.82] font-light tracking-[-0.045em]">
+                {product.longevity[0]}-{product.longevity[1]}
+              </span>
+              <span className="pb-1 text-sm leading-snug text-muted">
+                jam bertahan
+                <br />
+                di kulit
+              </span>
+            </p>
+            <p className="mt-7 max-w-md text-base leading-relaxed text-muted">
+              Sillage <span className="text-ink">{product.sillage.toLocaleLowerCase("id")}</span>,
+              paling pas untuk <span className="text-ink">{occasions}</span>.
+            </p>
+            <p className="mt-4 text-caption text-faint">
+              Kode varian <span className="font-mono text-muted">{product.code}</span>
+            </p>
+          </div>
 
-          {/* Spesifikasi dalam register lembar data, kontras dengan serif di atasnya */}
-          <dl className="mt-10 grid grid-cols-2 gap-px border border-line bg-line">
-            {specs.map((spec) => (
-              <div key={spec.label} className="bg-surface px-5 py-4">
-                <dt className="font-mono text-label tracking-label text-muted uppercase">
-                  {spec.label}
-                </dt>
-                <dd className="mt-2 font-mono text-sm text-ink">{spec.value}</dd>
-              </div>
-            ))}
-          </dl>
-
-          <div className="mt-10">
+          <div className="hairline mt-10 pt-10">
             <ProductPurchase product={product} />
           </div>
         </div>
       </div>
 
-      <section aria-labelledby="kurva" className="mt-28 md:mt-36">
-        <Reveal>
-          <p className="font-mono text-label tracking-label text-gold uppercase">
-            Kurva sillage
-          </p>
-          <h2 id="kurva" className="mt-5 max-w-xl font-display text-display font-light">
-            Perjalanan {product.name} dalam sehari
-          </h2>
-          <p className="mt-6 max-w-2xl text-base leading-relaxed text-muted">
+      <section aria-labelledby="kurva" className="mt-28 md:mt-44">
+        <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+          <HeadingReveal
+            id="kurva"
+            className="font-display text-statement font-light text-balance lg:col-span-8"
+          >
+            Perjalanan {product.name} <em className="italic">dalam sehari</em>
+          </HeadingReveal>
+          <p className="max-w-sm text-sm leading-relaxed text-muted lg:col-span-4 lg:justify-self-end lg:pb-3">
             Sentuh nama note mana pun untuk melihat kapan ia muncul dan kapan menghilang.
           </p>
-        </Reveal>
-        <Reveal className="mt-12">
+        </div>
+        <Reveal className="mt-14 md:mt-20">
           <ScentTimeline product={product} />
         </Reveal>
       </section>
 
       {related.length > 0 ? (
-        <section aria-labelledby="terkait" className="mt-28 md:mt-36">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <h2 id="terkait" className="font-display text-title font-light">
-              Varian lain di {CATEGORY_LABELS[product.category]}
+        <section aria-labelledby="terkait" className="hairline mt-24 pt-12 md:mt-32 md:pt-16">
+          <div className="flex flex-wrap items-baseline justify-between gap-x-8 gap-y-4">
+            <h2 id="terkait" className="font-display text-display font-light">
+              Varian {CATEGORY_LABELS[product.category]} lainnya
             </h2>
             <Button asChild variant="link">
               <Link href={`/koleksi?kategori=${product.category}`}>Lihat semua</Link>
             </Button>
           </div>
-          <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-12 lg:grid-cols-4">
-            {related.map((item) => (
-              <li key={item.slug}>
-                <ProductCard product={item} />
-              </li>
+          {/* Kartu genap turun sedikit, gema dari ritme grid koleksi. */}
+          <ul className="mt-12 grid grid-cols-2 gap-x-4 gap-y-12 pb-12 sm:gap-x-6 lg:grid-cols-4 lg:gap-x-8 lg:pb-16">
+            {related.map((item, index) => (
+              <Reveal as="li" key={item.slug} delay={index * 0.08}>
+                <ProductCard
+                  product={item}
+                  sizes="(min-width: 1024px) 22vw, 50vw"
+                  className={cn(index % 2 === 1 && "translate-y-10 lg:translate-y-14")}
+                />
+              </Reveal>
             ))}
           </ul>
         </section>

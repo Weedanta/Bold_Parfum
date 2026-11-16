@@ -14,7 +14,7 @@ import { LAYER_LABELS, LAYERS, type Layer, type Note } from "@/lib/products";
  */
 
 const inputClass =
-  "w-full border border-line bg-obsidian px-3 py-2 text-sm text-ink outline-none transition-colors focus:border-gold";
+  "w-full rounded-lg border border-line bg-obsidian px-3.5 py-2.5 text-sm text-ink outline-none transition-colors placeholder:text-faint hover:border-ink/20 focus:border-gold/70";
 
 export function Field({
   label,
@@ -29,9 +29,9 @@ export function Field({
 }) {
   return (
     <label className={cn("block", className)}>
-      <span className="font-mono text-label tracking-label text-muted uppercase">{label}</span>
+      <span className="text-sm text-muted">{label}</span>
       <span className="mt-2 block">{children}</span>
-      {hint ? <span className="mt-1.5 block text-xs text-muted">{hint}</span> : null}
+      {hint ? <span className="mt-1.5 block text-caption text-faint">{hint}</span> : null}
     </label>
   );
 }
@@ -59,7 +59,7 @@ export function ColorInput({ name, defaultValue }: { name: string; defaultValue:
         value={value}
         onChange={(event) => setValue(event.target.value)}
         aria-label={`Pemilih warna ${name}`}
-        className="size-9 shrink-0 cursor-pointer border border-line bg-obsidian"
+        className="size-10 shrink-0 cursor-pointer rounded-lg border border-line bg-obsidian"
       />
       <input
         type="text"
@@ -94,11 +94,11 @@ export function NotesEditor({ notes }: { notes: Note[] }) {
   return (
     <div>
       <div className="flex items-baseline justify-between">
-        <span className="font-mono text-label tracking-label text-muted uppercase">Note aroma</span>
-        <span className="text-xs text-muted">{rows.length} note</span>
+        <h3 className="text-base text-ink">Note aroma</h3>
+        <span className="text-caption text-faint">{rows.length} note</span>
       </div>
 
-      <p className="mt-2 text-xs leading-relaxed text-muted">
+      <p className="mt-2 max-w-prose text-caption text-muted">
         Waktu dalam menit sejak disemprot. Onset saat mulai terasa, puncak saat paling kuat, habis
         saat menghilang. Urutannya harus onset ≤ puncak ≤ habis.
       </p>
@@ -107,7 +107,7 @@ export function NotesEditor({ notes }: { notes: Note[] }) {
         {rows.map((row, index) => (
           <li
             key={index}
-            className="grid grid-cols-2 gap-2 border border-line p-3 sm:grid-cols-[minmax(0,1fr)_7rem_5rem_5rem_5rem_2.25rem]"
+            className="grid grid-cols-2 gap-2 rounded-xl border border-line bg-surface/60 p-3 sm:grid-cols-[minmax(0,1fr)_7rem_5rem_5rem_5rem_2.25rem]"
           >
             <input
               name="note_name"
@@ -146,7 +146,7 @@ export function NotesEditor({ notes }: { notes: Note[] }) {
               type="button"
               onClick={() => setRows((current) => current.filter((_, i) => i !== index))}
               aria-label={`Hapus note baris ${index + 1}`}
-              className="border border-line text-muted transition-colors hover:border-gold hover:text-ink"
+              className="min-h-10 rounded-lg border border-line text-muted transition-colors hover:border-red-400/50 hover:text-red-300"
             >
               &times;
             </button>
@@ -162,7 +162,7 @@ export function NotesEditor({ notes }: { notes: Note[] }) {
             { name: "", layer: "top", onset: 0, peak: 10, fade: 45 },
           ])
         }
-        className="mt-3 border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-gold hover:text-ink"
+        className="mt-3 rounded-full border border-line px-4 py-2 text-sm text-muted transition-colors hover:border-ink/40 hover:text-ink"
       >
         Tambah note
       </button>

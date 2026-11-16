@@ -5,6 +5,7 @@ import { useActionState, useState } from "react";
 import { buatVarian, type ActionState } from "@/app/admin/actions";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/products";
 import { Field, Select, TextInput } from "@/components/admin/form-fields";
+import { Button } from "@/components/ui/button";
 
 /**
  * Mengubah "Midnight Oud" menjadi "midnight-oud".
@@ -80,9 +81,9 @@ export function NewVariantForm() {
         </Field>
       </section>
 
-      <section>
-        <span className="font-mono text-label tracking-label text-muted uppercase">Harga</span>
-        <p className="mt-2 text-xs leading-relaxed text-muted">
+      <fieldset>
+        <legend className="text-base text-ink">Harga</legend>
+        <p className="mt-2 text-caption text-muted">
           Rupiah, tanpa titik. Kosongkan salah satunya kalau ukuran itu tidak dijual, tapi
           minimal satu harus terisi.
         </p>
@@ -95,23 +96,19 @@ export function NewVariantForm() {
             <TextInput name="price_50" type="number" min={0} placeholder="219000" />
           </Field>
         </div>
-      </section>
+      </fieldset>
 
       <div className="flex flex-wrap items-center gap-4 border-t border-line pt-5">
-        <button
-          type="submit"
-          disabled={pending}
-          className="border border-gold-bright bg-gold-bright px-6 py-2.5 text-sm text-obsidian transition-opacity disabled:opacity-50"
-        >
-          {pending ? "Membuat..." : "Buat varian"}
-        </button>
+        <Button type="submit" disabled={pending}>
+          {pending ? "Membuat…" : "Buat varian"}
+        </Button>
 
-        <p className="text-xs text-muted">
+        <p className="text-caption text-faint">
           Varian dibuat dalam keadaan disembunyikan sampai kamu menayangkannya.
         </p>
 
         {state.error ? (
-          <p role="alert" className="w-full text-sm text-red-400">
+          <p role="alert" className="w-full text-sm text-red-300">
             {state.error}
           </p>
         ) : null}

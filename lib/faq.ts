@@ -4,32 +4,33 @@
  */
 export const faq = [
   {
-    question: "Bagaimana cara kerja Scent Profiler?",
+    question: "Bagaimana cara kerja kuis Scent Profiler?",
     answer:
-      "Empat pertanyaan tentang cara Anda hadir di ruangan, dorongan hidup, dan sisi lain diri Anda. Jawaban itu diterjemahkan jadi bobot karakter, lalu dicocokkan dengan karakter tiap varian. Tidak perlu paham istilah parfum sama sekali.",
+      "Kamu cukup menjawab empat pertanyaan singkat soal gaya keseharian dan suasana yang kamu suka. Dari jawaban itu, kami pilihkan varian The Bold yang karakternya paling nyambung dengan kepribadianmu, jadi kamu tidak perlu menebak-nebak istilah parfum.",
   },
   {
-    question: "Apa arti kurva sillage di setiap halaman varian?",
+    question: "Cara membaca grafik kurva aroma di tiap parfum itu gimana?",
     answer:
-      "Grafik itu menunjukkan kapan tiap note muncul, memuncak, dan menghilang. Top note terasa di menit-menit pertama, heart note mengambil alih setelah sekitar 30 menit, base note bertahan setelah dua jam. Ini cara kami menggantikan pengalaman mencium langsung di toko.",
+      "Wangi parfum berubah seiring waktu setelah disemprot. Grafik itu membantu kamu membayangkan perjalanannya: wangi segar di 15 menit pertama (top notes), aroma inti setelah setengah jam (heart notes), sampai wangi dasar yang menempel di kulit berjam-jam kemudian (base notes).",
   },
   {
-    question: "Berapa lama parfum The Bold bertahan?",
+    question: "Berapa lama wangi parfum The Bold bertahan di kulit?",
     answer:
-      "Tergantung varian. Yang paling ringan bertahan sekitar 5 sampai 7 jam, sedangkan varian dengan base note tonka, oud, atau vanila bisa 8 sampai 12 jam. Angka pastinya tercantum di setiap halaman varian.",
+      "Rata-rata bertahan 6 sampai 12 jam tergantung varian dan aktivitasmu. Varian segar untuk siang hari biasanya bertahan 6 sampai 10 jam, sedangkan varian hangat dengan vanila, amber, atau kayu-kayuan bisa awet 8 sampai 12 jam.",
   },
   {
-    question: "Ukuran apa saja yang tersedia?",
-    answer: "Setiap varian tersedia dalam botol 30 ml dan 50 ml.",
+    question: "Ada ukuran botol apa saja?",
+    answer:
+      "Semua varian tersedia dalam dua ukuran: botol 30 ml yang praktis dibawa di tas, dan botol 50 ml untuk pemakaian rutin setiap hari.",
   },
   {
-    question: "Bagaimana cara memesan?",
+    question: "Bagaimana cara memesannya?",
     answer:
-      "Pilih ukuran di halaman varian, lalu tekan Beli via WhatsApp untuk memesan satu varian, atau masukkan ke keranjang dulu kalau mau beberapa sekaligus. Isi keranjang otomatis dirangkai jadi pesan WhatsApp saat checkout.",
+      "Tinggal pilih ukuran botol yang kamu mau, lalu klik tombol Beli via WhatsApp. Kalau ingin beli lebih dari satu varian, masukkan dulu ke keranjang. Daftar pesananmu akan otomatis terformat rapi di chat WhatsApp admin kami.",
   },
   {
-    question: "Apakah bisa ditukar kalau aromanya tidak cocok?",
+    question: "Kalau wanginya kurang cocok, apakah bisa ditukar?",
     answer:
-      "Bisa, selama segel botol belum dibuka dan pengajuan dilakukan dalam 7 hari setelah barang diterima. Botol yang sudah dibuka tidak bisa ditukar karena alasan higienitas.",
+      "Bisa. Selama segel kemasan belum dibuka, kamu bisa mengajukan penukaran ke varian lain maksimal 7 hari sejak paket diterima. Untuk alasan kebersihan, botol yang segelnya sudah dibuka tidak dapat ditukar.",
   },
 ] as const;

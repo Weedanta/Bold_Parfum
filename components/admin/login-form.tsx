@@ -4,6 +4,7 @@ import { useActionState } from "react";
 
 import { masuk, type ActionState } from "@/app/admin/actions";
 import { Field, TextInput } from "@/components/admin/form-fields";
+import { Button } from "@/components/ui/button";
 
 export function LoginForm() {
   const [state, action, pending] = useActionState<ActionState, FormData>(masuk, {});
@@ -17,16 +18,12 @@ export function LoginForm() {
         <TextInput name="password" type="password" autoComplete="current-password" required />
       </Field>
 
-      <button
-        type="submit"
-        disabled={pending}
-        className="border border-gold-bright bg-gold-bright px-6 py-2.5 text-sm text-obsidian transition-opacity disabled:opacity-50"
-      >
+      <Button type="submit" disabled={pending} className="mt-2 w-full">
         {pending ? "Memeriksa…" : "Masuk"}
-      </button>
+      </Button>
 
       {state.error ? (
-        <p role="alert" className="text-sm text-red-400">
+        <p role="alert" className="text-sm text-red-300">
           {state.error}
         </p>
       ) : null}

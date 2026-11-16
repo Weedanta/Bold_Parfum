@@ -29,8 +29,20 @@ async function loadFonts() {
   ];
 }
 
+/** Palet situs, ditulis ulang di sini karena Satori tidak membaca token CSS. */
+const COLOR = {
+  bg: "#0c0b0a",
+  accent: "#e3cfa6",
+  ink: "#f3eee6",
+  muted: "#a39b8f",
+} as const;
+
 /**
  * Kartu OG bersama untuk halaman produk dan halaman hasil kuis.
+ *
+ * `eyebrow` tetap jadi nama parameternya supaya pemanggil lama tidak berubah,
+ * tapi isinya kini digambar sebagai keterangan biasa di pojok kanan atas, huruf
+ * biasa tanpa kapital berjarak, bukan papan nama.
  *
  * Kurva sillage ikut digambar supaya tautan yang dibagikan ke WhatsApp atau
  * Instagram langsung terbaca sebagai The Bold, bukan kartu teks generik.
@@ -63,7 +75,7 @@ export async function productOgImage({
           display: "flex",
           flexDirection: "column",
           justifyContent: "space-between",
-          backgroundColor: "#0B0C10",
+          backgroundColor: COLOR.bg,
           backgroundImage: `radial-gradient(900px 520px at 88% 6%, ${product.atmosphere.from}44, transparent 68%)`,
           padding: "64px 72px",
           position: "relative",
@@ -73,11 +85,9 @@ export async function productOgImage({
           <div
             style={{
               display: "flex",
-              fontFamily: "PlexMono",
-              fontSize: 22,
-              letterSpacing: 6,
-              color: "#C5A880",
-              textTransform: "uppercase",
+              fontFamily: "Fraunces",
+              fontSize: 34,
+              color: COLOR.accent,
             }}
           >
             {site.name}
@@ -85,11 +95,9 @@ export async function productOgImage({
           <div
             style={{
               display: "flex",
-              fontFamily: "PlexMono",
-              fontSize: 20,
-              letterSpacing: 5,
-              color: "#A0AAB2",
-              textTransform: "uppercase",
+              fontFamily: "Fraunces",
+              fontSize: 28,
+              color: COLOR.muted,
             }}
           >
             {eyebrow}
@@ -103,7 +111,7 @@ export async function productOgImage({
               fontFamily: "Fraunces",
               fontSize: 132,
               lineHeight: 1,
-              color: "#FFFFFF",
+              color: COLOR.ink,
             }}
           >
             {product.name}
@@ -125,8 +133,8 @@ export async function productOgImage({
               marginTop: 28,
               fontFamily: "PlexMono",
               fontSize: 22,
-              letterSpacing: 3,
-              color: "#A0AAB2",
+              letterSpacing: 1,
+              color: COLOR.muted,
             }}
           >
             {kicker}

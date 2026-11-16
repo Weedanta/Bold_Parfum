@@ -1,17 +1,24 @@
 "use client";
 
+import type { CSSProperties } from "react";
 import Link from "next/link";
-import { Minus, Plus, ShoppingBag } from "lucide-react";
+import { ArrowUpRight, Minus, Plus } from "lucide-react";
 
 import { cartLines, cartTotal, itemKey } from "@/lib/cart";
 import { STOCK_LABELS } from "@/lib/products";
 import { whatsappCartLink } from "@/lib/whatsapp";
 import { cn, formatIDR } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { useCart } from "@/components/cart-provider";
 import { useCatalog } from "@/components/catalog-provider";
 import { BottleThumb } from "@/components/bottle-image";
+
+/** Urutan masuk bertingkat untuk `.sheet-item`, dibaca oleh keyframes di sheet.tsx. */
+function stagger(index: number) {
+  return { "--sheet-i": index } as CSSProperties;
+}
 
 export function CartSheet() {
   const cart = useCart();
@@ -25,78 +32,100 @@ export function CartSheet() {
   return (
     <Sheet open={cart.isOpen} onOpenChange={(open) => (open ? cart.open() : cart.close())}>
       <SheetContent aria-describedby={undefined}>
-        <div className="flex items-center gap-3 border-b border-line px-6 py-5">
-          <ShoppingBag className="size-4 text-gold" />
-          <SheetTitle className="font-mono text-label tracking-label uppercase">
-            Keranjang
-          </SheetTitle>
+        <div className="sheet-item px-6 pt-7 pb-6 sm:px-8" style={stagger(0)}>
+          <SheetTitle className="font-display text-title font-light">Keranjang</SheetTitle>
+          <p className="mt-1.5 text-caption text-muted">
+            {cart.count > 0 ? `${cart.count} item dipilih` : "Belum ada yang dipilih"}
+          </p>
         </div>
 
         {lines.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center gap-6 px-6 text-center">
-            <p className="text-sm text-muted">
-              Keranjang masih kosong. Mulai dari Scent Profiler kalau belum tahu mau yang mana.
+          <div className="flex flex-1 flex-col justify-center px-6 pb-16 sm:px-8">
+            <p className="sheet-item max-w-[18ch] font-display text-display font-light" style={stagger(1)}>
+              Belum tahu mau <span className="italic">yang mana?</span>
             </p>
-            <Button asChild variant="outline" size="sm" onClick={cart.close}>
-              <Link href="/kuis">Mulai Scent Profiler</Link>
-            </Button>
+            <p
+              className="sheet-item mt-5 max-w-xs text-sm leading-relaxed text-muted"
+              style={stagger(2)}
+            >
+              Keranjang masih kosong. Scent Profiler membantu memilih lewat beberapa pertanyaan
+              singkat.
+            </p>
+            <div className="sheet-item mt-8" style={stagger(3)}>
+              <Button asChild variant="outline" onClick={cart.close}>
+                <Link href="/kuis">
+                  Mulai Scent Profiler
+                  <ArrowUpRight />
+                </Link>
+              </Button>
+            </div>
           </div>
         ) : (
           <>
-            <ul className="flex-1 divide-y divide-line overflow-y-auto">
-              {lines.map((line) => {
+            <ul className="hairline flex-1 overflow-y-auto px-6 sm:px-8">
+              {lines.map((line, index) => {
                 const key = itemKey(line.item);
                 return (
-                  <li key={key} className="flex gap-4 px-6 py-5">
-                    <BottleThumb product={line.product} className="size-20 shrink-0" />
+                  <li
+                    key={key}
+                    className="sheet-item flex gap-5 border-b border-line/70 py-6 last:border-b-0"
+                    style={stagger(index + 1)}
+                  >
+                    <BottleThumb
+                      product={line.product}
+                      className={cn("size-24 shrink-0", line.orderable ? null : "opacity-60")}
+                    />
 
-                    <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 flex-1 flex-col">
                       <Link
                         href={`/koleksi/${line.product.slug}`}
                         onClick={cart.close}
-                        className="font-display text-lg transition-colors hover:text-gold"
+                        className="self-start font-display text-xl leading-tight font-light transition-colors hover:text-gold-bright"
                       >
                         {line.product.name}
                       </Link>
-                      <p className="font-mono text-[11px] text-muted">
-                        {line.item.ml} ml &middot; {formatIDR(line.price)}
+
+                      <p className="mt-1.5 flex flex-wrap gap-x-3 text-caption text-muted">
+                        <span>{line.item.ml} ml</span>
+                        <span className="text-faint">{formatIDR(line.price)}</span>
                       </p>
 
                       {line.orderable ? null : (
-                        <p className="mt-1 font-mono text-[11px] text-muted/80">
-                          {STOCK_LABELS[line.product.stock]} &middot; tidak ikut dipesan
+                        <p className="mt-2.5 flex flex-wrap items-center gap-2">
+                          <Badge>{STOCK_LABELS[line.product.stock]}</Badge>
+                          <span className="text-caption text-faint">Tidak ikut dipesan</span>
                         </p>
                       )}
 
-                      <div className="mt-3 flex items-center gap-3">
-                        <div className="flex items-center border border-line">
+                      <div className="mt-auto flex items-center gap-3 pt-4">
+                        <div className="flex items-center rounded-full border border-line">
                           <button
                             type="button"
                             aria-label={`Kurangi ${line.product.name}`}
                             onClick={() => cart.updateQty(key, line.item.qty - 1)}
-                            className="p-2 text-muted transition-colors hover:text-ink"
+                            className="flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-ink"
                           >
                             <Minus className="size-3" />
                           </button>
-                          <span className="w-8 text-center font-mono text-xs">
+                          <span className="w-6 text-center font-mono text-xs tabular-nums">
                             {line.item.qty}
                           </span>
                           <button
                             type="button"
                             aria-label={`Tambah ${line.product.name}`}
                             onClick={() => cart.updateQty(key, line.item.qty + 1)}
-                            className="p-2 text-muted transition-colors hover:text-ink"
+                            className="flex size-9 items-center justify-center rounded-full text-muted transition-colors hover:text-ink"
                           >
                             <Plus className="size-3" />
                           </button>
                         </div>
                         {/* Subtotal baris yang tidak ikut dipesan diredam dan dicoret.
-                            Kalau ia tetap emas seperti yang lain, jumlah angka yang
+                            Kalau ia tetap terang seperti yang lain, jumlah angka yang
                             terlihat tidak akan cocok dengan Total di bawah. */}
                         <span
                           className={cn(
-                            "ml-auto font-mono text-xs",
-                            line.orderable ? "text-gold" : "text-muted/60 line-through",
+                            "ml-auto text-sm tabular-nums",
+                            line.orderable ? "text-ink" : "text-faint line-through",
                           )}
                         >
                           {formatIDR(line.subtotal)}
@@ -108,32 +137,36 @@ export function CartSheet() {
               })}
             </ul>
 
-            <div className="border-t border-line px-6 py-6">
-              <div className="flex items-baseline justify-between">
-                <span className="font-mono text-label tracking-label text-muted uppercase">
-                  Total
+            <div
+              className="sheet-item border-t border-line bg-raised/60 px-6 pt-6 pb-7 sm:px-8"
+              style={stagger(lines.length + 1)}
+            >
+              <div className="flex items-end justify-between gap-4">
+                <span className="text-sm text-muted">Total</span>
+                <span className="font-display text-title font-light tabular-nums">
+                  {formatIDR(total)}
                 </span>
-                <span className="font-display text-2xl text-gold">{formatIDR(total)}</span>
               </div>
 
               {adaYangBisaDipesan ? (
-                <Button asChild size="lg" className="mt-5 w-full">
+                <Button asChild size="lg" className="mt-6 w-full">
                   <a
                     href={whatsappCartLink(cart.items, catalog)}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
                     Pesan lewat WhatsApp
+                    <ArrowUpRight />
                   </a>
                 </Button>
               ) : (
-                <Button type="button" size="lg" disabled className="mt-5 w-full">
+                <Button type="button" size="lg" disabled className="mt-6 w-full">
                   Semua varian sedang kosong
                 </Button>
               )}
-              <p className="mt-3 text-center text-[11px] leading-relaxed text-muted">
-                Pesanan diteruskan ke WhatsApp beserta rincian di atas. Stok dan ongkos kirim
-                dikonfirmasi admin.
+              <p className="mt-4 text-caption text-faint">
+                Rincian di atas ikut terkirim ke WhatsApp. Stok dan ongkos kirim dikonfirmasi
+                admin.
               </p>
             </div>
           </>

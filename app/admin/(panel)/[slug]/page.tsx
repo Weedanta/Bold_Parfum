@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 
 import { createSupabaseSessionClient, requireAdmin } from "@/lib/supabase/auth";
 import { publicPhotoUrl } from "@/lib/supabase/server";
@@ -77,23 +78,25 @@ export default async function EditProductPage({
     <div>
       <Link
         href="/admin"
-        className="font-mono text-label tracking-label text-muted uppercase transition-colors hover:text-ink"
+        className="inline-flex min-h-11 items-center gap-2 text-sm text-muted transition-colors hover:text-ink"
       >
-        &larr; Semua varian
+        <ArrowLeft className="size-4" />
+        Semua varian
       </Link>
 
-      <div className="mt-6 flex flex-wrap items-end justify-between gap-4">
+      <div className="mt-4 flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-xs text-muted">{product.code}</p>
+          <p className="font-mono text-xs text-faint">{product.code}</p>
           <h1 className="mt-2 font-display text-display font-light">{product.name}</h1>
         </div>
         <Link
           href={`/koleksi/${product.slug}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-sm text-gold underline-offset-4 hover:underline"
+          className="inline-flex min-h-11 items-center gap-1.5 text-sm text-gold-bright"
         >
-          Lihat di situs
+          <span className="link-sweep pb-0.5">Lihat di situs</span>
+          <ArrowUpRight className="size-4" />
         </Link>
       </div>
 

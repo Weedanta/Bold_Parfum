@@ -4,25 +4,37 @@ import { cva, type VariantProps } from "class-variance-authority";
 
 import { cn } from "@/lib/utils";
 
+/*
+ * Isi tombol naik dari bawah saat disorot, lewat pseudo-elemen `before`.
+ *
+ * Yang dianimasikan hanya transform dari satu lapisan, jadi warnanya berganti
+ * seperti tirai yang ditarik, bukan memudar. Teks duduk di atas lapisan itu
+ * karena tombolnya `isolate` dan lapisannya `-z-10`.
+ */
+const fill =
+  "before:absolute before:inset-0 before:-z-10 before:rounded-[inherit] before:translate-y-[102%] before:transition-transform before:duration-700 before:ease-[var(--ease-out-soft)] hover:before:translate-y-0 focus-visible:before:translate-y-0";
+
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 rounded-xs font-medium whitespace-nowrap transition-[background-color,color,box-shadow,border-color] duration-300 ease-[var(--ease-out-soft)] disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+  "relative isolate inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-full font-medium tracking-[-0.005em] whitespace-nowrap transition-[color,border-color] duration-500 ease-[var(--ease-out-soft)] disabled:pointer-events-none disabled:opacity-45 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-500 hover:[&_svg]:translate-x-0.5",
   {
     variants: {
       variant: {
-        /* CTA utama, glow emas saat hover, sesuai PRD bagian 6 */
-        primary:
-          "bg-gold-bright text-obsidian hover:bg-gold shadow-[0_0_0_0_rgba(212,175,55,0)] hover:shadow-[0_0_32px_-6px_rgba(212,175,55,0.55)]",
-        outline:
-          "border border-line bg-transparent text-ink hover:border-gold hover:text-gold",
+        primary: cn("bg-gold-bright text-obsidian before:bg-ink", fill),
+        outline: cn(
+          "border border-ink/25 bg-transparent text-ink before:bg-ink hover:border-ink hover:text-obsidian",
+          fill,
+        ),
         ghost: "bg-transparent text-muted hover:bg-surface hover:text-ink",
-        link: "h-auto p-0 text-gold underline-offset-4 hover:underline",
+        link: "link-sweep rounded-none pb-0.5 text-ink hover:text-gold-bright",
       },
       size: {
         sm: "h-9 px-4 text-sm [&_svg]:size-4",
         md: "h-11 px-6 text-sm [&_svg]:size-4",
-        lg: "h-14 px-8 text-base [&_svg]:size-5",
+        lg: "h-14 px-8 text-[0.95rem] [&_svg]:size-4",
       },
     },
+    // Tautan teks tidak punya tinggi dan bantalan tombol, berapa pun ukurannya.
+    compoundVariants: [{ variant: "link", className: "h-auto px-0" }],
     defaultVariants: { variant: "primary", size: "md" },
   },
 );

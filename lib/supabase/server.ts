@@ -23,6 +23,25 @@ function requireEnv(name: string, fallbackName?: string) {
   );
 }
 
+/**
+ * Memeriksa apakah environment variable Supabase sudah diisi dan URL-nya valid,
+ * tanpa melempar error. Dipakai untuk fallback ke katalog bawaan saat Supabase
+ * belum dikonfigurasi.
+ */
+export function hasSupabaseEnv(): boolean {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key =
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  if (!url || !key) return false;
+
+  try {
+    new URL(url);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 /** Pasangan URL dan kunci publishable, dipakai juga oleh klien sesi dan proxy. */
 export function supabaseEnv() {
   return {

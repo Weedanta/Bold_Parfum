@@ -28,6 +28,7 @@ import {
   type Vibe,
 } from "@/lib/products";
 import { publicPhotoUrl } from "@/lib/supabase/server";
+import { SEED_FEATURED, seedProducts } from "@/lib/seed/products.seed";
 
 type NoteRow = {
   position: number;
@@ -120,6 +121,12 @@ function toSizes(rows: SizeRow[] | null, slug: string): { ml: Size; price: numbe
   return sizes;
 }
 
+const LOCAL_PHOTO_SLUGS = new Set(seedProducts.map((product) => product.slug));
+
+function localPhotoUrl(slug: string): string | null {
+  return LOCAL_PHOTO_SLUGS.has(slug) ? `/products/${slug}.webp` : null;
+}
+
 export function rowToProduct(row: ProductRow): Product {
   assertKnown(oneOf(CATEGORIES, row.category), row.slug, "category", row.category);
   assertKnown(oneOf(SILLAGES, row.sillage), row.slug, "sillage", row.sillage);
@@ -148,8 +155,27 @@ export function rowToProduct(row: ProductRow): Product {
     notes: toNotes(row.product_notes),
     sizes: toSizes(row.product_sizes, row.slug),
     badges: byPosition(row.product_badges).map((entry) => entry.label),
-    photoUrl: row.photo_path ? publicPhotoUrl(row.photo_path) : null,
+    photoUrl: row.photo_path ? publicPhotoUrl(row.photo_path) : localPhotoUrl(row.slug),
     stock: row.stock_status as Stock,
     featuredFor: oneOf(CATEGORIES, row.featured_for) ? (row.featured_for as Category) : null,
   };
+}
+
+/**
+ * Katalog bawaan dari seed data. Dipakai sebagai fallback saat Supabase belum
+ * dikonfigurasi, kosong, atau sedang tidak dapat dijangkau agar situs publik
+ * tetap tampil seutuhnya.
+ */
+export function seedCatalog(): Product[] {
+  return seedProducts.map((seed) => ({
+    ...seed,
+    photoUrl: localPhotoUrl(seed.slug),
+    stock: "tersedia",
+    featuredFor:
+      SEED_FEATURED.pria === seed.slug
+        ? "pria"
+        : SEED_FEATURED.wanita === seed.slug
+          ? "wanita"
+          : null,
+  }));
 }

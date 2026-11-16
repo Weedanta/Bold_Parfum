@@ -24,7 +24,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <div className="flex flex-1 flex-col">
       <Suspense
         fallback={
-          <p className="shell py-12 font-mono text-label tracking-label text-muted uppercase">
+          <p role="status" className="shell py-12 text-sm text-muted">
             Memuat…
           </p>
         }
