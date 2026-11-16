@@ -19,6 +19,6 @@ export default async function Image({ params }: { params: Promise<{ slug: string
   return productOgImage({
     product,
     eyebrow: product.category === "pria" ? "For Him" : "For Her",
-    kicker: `${product.family}  ·  ${product.longevity[0]}-${product.longevity[1]} jam  ·  30 & 50 ml`,
+    kicker: `${product.family}, tahan ${product.longevity[0]}-${product.longevity[1]} jam, 30 dan 50 ml`,
   });
 }

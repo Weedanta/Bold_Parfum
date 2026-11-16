@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fraunces, IBM_Plex_Mono, Plus_Jakarta_Sans } from "next/font/google";
+import { Fraunces, Geist, IBM_Plex_Mono } from "next/font/google";
 
 import "./globals.css";
 import { site } from "@/lib/site";
@@ -11,9 +11,9 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-const jakarta = Plus_Jakarta_Sans({
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-jakarta",
+  variable: "--font-geist",
   display: "swap",
 });
 
@@ -27,8 +27,8 @@ const plexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: `${site.name} · ${site.tagline}`,
-    template: `%s · ${site.name}`,
+    default: `${site.name}, ${site.tagline}`,
+    template: `%s | ${site.name}`,
   },
   description: site.description,
   applicationName: site.name,
@@ -47,12 +47,12 @@ export const metadata: Metadata = {
     locale: site.locale,
     url: site.url,
     siteName: site.name,
-    title: `${site.name} · ${site.tagline}`,
+    title: `${site.name}, ${site.tagline}`,
     description: site.description,
   },
   twitter: {
     card: "summary_large_image",
-    title: `${site.name} · ${site.tagline}`,
+    title: `${site.name}, ${site.tagline}`,
     description: site.description,
   },
   robots: {
@@ -76,9 +76,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="id"
-      className={`${fraunces.variable} ${jakarta.variable} ${plexMono.variable} h-full`}
+      className={`${fraunces.variable} ${geist.variable} ${plexMono.variable} h-full`}
     >
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {children}
+        <div aria-hidden="true" className="site-grain" />
+      </body>
     </html>
   );
 }

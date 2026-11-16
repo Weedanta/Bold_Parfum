@@ -2,33 +2,45 @@
 
 /* ---------------------------------------------------------------------------
    The Bold design tokens
-   Palet dikunci oleh PRD bagian 6. Jangan ubah tanpa mengubah PRD.
+
+   Nama token sama dengan PRD bagian 6, nilainya digeser ke arah yang lebih
+   hangat: hitam yang condong ke cokelat tua, emas yang turun menjadi champagne,
+   dan putih gading sebagai warna teks. Emas metalik yang terang di semua tempat
+   adalah tanda paling cepat dari situs "mewah" buatan template, jadi aksen kini
+   dipakai hemat dan kontras dibangun dari terang gelap, bukan dari warna.
    --------------------------------------------------------------------------- */
 
 @theme {
   /* Permukaan */
-  --color-obsidian: #0b0c10;
-  --color-charcoal: #1f2833;
-  --color-surface: #16191e;
-  --color-line: #2a2f35;
+  --color-obsidian: #0c0b0a;
+  --color-charcoal: #1e1b17;
+  --color-surface: #151310;
+  --color-raised: #1b1814;
+  --color-line: #2b2721;
 
   /* Aksen rumah */
-  --color-gold: #c5a880;
-  --color-gold-bright: #d4af37;
+  --color-gold: #c9b28a;
+  --color-gold-bright: #e3cfa6;
 
   /* Teks */
-  --color-ink: #ffffff;
-  --color-muted: #a0aab2;
+  --color-ink: #f3eee6;
+  --color-muted: #a39b8f;
+  --color-faint: #6f685e;
 
   /* Tipografi, tiga peran, lihat spec bagian 3 */
   --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
-  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, monospace;
 
   /* Skala display, fluid, tanpa breakpoint */
-  --text-hero: clamp(2.6rem, 0.5rem + 6.6vw, 7.5rem);
-  --text-hero--line-height: 0.9;
-  --text-hero--letter-spacing: -0.035em;
+  --text-hero: clamp(2.75rem, 0.6rem + 6.8vw, 8.25rem);
+  --text-hero--line-height: 0.92;
+  --text-hero--letter-spacing: -0.04em;
+
+  /* Judul section besar, satu tingkat di bawah hero. */
+  --text-statement: clamp(2.2rem, 0.9rem + 4.2vw, 5.25rem);
+  --text-statement--line-height: 0.98;
+  --text-statement--letter-spacing: -0.035em;
 
   --text-display: clamp(1.9rem, 1.15rem + 2.4vw, 3.1rem);
   --text-display--line-height: 1.02;
@@ -38,15 +50,23 @@
   --text-title--line-height: 1.15;
   --text-title--letter-spacing: -0.015em;
 
-  /* Eyebrow / label mono */
+  /* Teks keterangan kecil, huruf biasa. Pengganti label mono uppercase: konteks
+     kecil boleh ada, tapi ditulis sebagai kalimat, bukan sebagai papan nama. */
+  --text-caption: 0.8125rem;
+  --text-caption--line-height: 1.45;
+  --text-caption--letter-spacing: 0.005em;
+
+  /* Sisa sistem lama. Hanya untuk data tabular kecil (kode varian, sumbu
+     waktu), tidak lagi untuk menamai section. */
   --text-label: 0.6875rem;
   --text-label--line-height: 1;
-  --text-label--letter-spacing: 0.22em;
+  --text-label--letter-spacing: 0.14em;
 
-  --tracking-label: 0.22em;
+  --tracking-label: 0.14em;
 
   /* Easing bersama untuk CSS dan GSAP */
   --ease-out-soft: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out-silk: cubic-bezier(0.76, 0, 0.24, 1);
 }
 
 /* ---------------------------------------------------------------------------
@@ -67,16 +87,18 @@
     text-rendering: optimizeLegibility;
   }
 
-  /* Fraunces adalah variable font. Sumbu WONK dan SOFT yang memberi kesan
-     dipahat tangan, bukan didone rumah mode. Lihat spec bagian 3. */
+  /* Fraunces adalah variable font. Sumbu WONK dimatikan: huruf yang miring
+     nakal terbaca jenaka, bukan mewah. SOFT dinaikkan sedikit supaya serifnya
+     tidak setajam didone majalah. */
   .font-display {
     font-variation-settings:
-      "SOFT" 24,
-      "WONK" 1;
+      "SOFT" 30,
+      "WONK" 0;
+    font-optical-sizing: auto;
   }
 
   ::selection {
-    background-color: var(--color-gold);
+    background-color: var(--color-gold-bright);
     color: var(--color-obsidian);
   }
 
@@ -153,7 +175,9 @@
 }
 
 .marquee-track {
-  animation: marquee-x 54s linear infinite;
+  /* Nama kini dicetak jauh lebih besar, jadi lajunya diturunkan supaya tiap
+     nama tetap sempat dibaca sebelum keluar layar. */
+  animation: marquee-x 80s linear infinite;
 }
 
 .marquee:hover .marquee-track,
@@ -329,5 +353,100 @@
   .hero-vapor,
   .hero-grain {
     animation: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Garis bawah yang menyapu. Tautan teks tidak bergaris saat diam; garisnya
+   tumbuh dari kiri saat disorot dan pergi ke kanan saat ditinggal.
+   --------------------------------------------------------------------------- */
+
+@utility link-sweep {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 100% 100%;
+  background-size: 0% 1px;
+  transition:
+    background-size 0.6s var(--ease-out-soft),
+    color 0.3s ease;
+
+  &:hover,
+  &:focus-visible {
+    background-position: 0% 100%;
+    background-size: 100% 1px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Butiran film seluruh situs. Satu lapis tetap di atas semua konten, sangat
+   tipis, supaya hitam polos terasa seperti kertas foto, bukan layar kosong.
+   --------------------------------------------------------------------------- */
+
+.site-grain {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  pointer-events: none;
+  opacity: 0.035;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ---------------------------------------------------------------------------
+   Masuk halaman. Dipasang oleh app/(site)/template.tsx yang dirender ulang tiap
+   navigasi. CSS murni supaya halaman tetap tampil walau JavaScript belum jalan.
+   --------------------------------------------------------------------------- */
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+.page-enter {
+  animation: page-in 0.9s var(--ease-out-soft) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter {
+    animation: none;
+  }
+}
+
+/* Slider hero: batang progres dan nama parfum yang naik saat slide berganti. */
+@keyframes hero-progress {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes hero-fade-up {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.hero-fade-up {
+  animation: hero-fade-up 0.9s var(--ease-out-soft) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-fade-up {
+    animation: none;
   }
 }
