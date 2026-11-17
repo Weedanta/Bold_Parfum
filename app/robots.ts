@@ -7,6 +7,8 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
+      // Panel admin dan halaman internal tidak untuk mesin pencari.
+      disallow: ["/admin", "/admin/", "/api/"],
     },
     sitemap: `${site.url}/sitemap.xml`,
     host: site.url,

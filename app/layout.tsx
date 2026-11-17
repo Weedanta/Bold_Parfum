@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Geist, IBM_Plex_Mono } from "next/font/google";
 
 import "./globals.css";
@@ -32,6 +32,17 @@ export const metadata: Metadata = {
   },
   description: site.description,
   applicationName: site.name,
+  authors: [{ name: site.name, url: site.url }],
+  creator: site.name,
+  publisher: site.name,
+  category: "shopping",
+  // Nomor di teks (harga, ml, jam) jangan diubah browser seluler jadi tautan telepon.
+  formatDetection: { telephone: false, email: false, address: false },
+  appleWebApp: { capable: true, title: site.name, statusBarStyle: "black-translucent" },
+  // Isi lewat env setelah situs didaftarkan di Search Console.
+  verification: process.env.GOOGLE_SITE_VERIFICATION
+    ? { google: process.env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
   keywords: [
     "parfum premium",
     "parfum pria",
@@ -60,6 +71,13 @@ export const metadata: Metadata = {
     follow: true,
     googleBot: { index: true, follow: true, "max-image-preview": "large" },
   },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#0c0b0a",
+  colorScheme: "dark",
 };
 
 /**
